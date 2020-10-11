@@ -2,10 +2,12 @@ package pong;
 
 import javax.swing.*; //window
 import java.awt.*; //painting graphics and images
+import java.net.URI;
 import java.util.Random; //random number generator
 import java.io.File;
 import java.awt.event.KeyEvent; //includes all of the constants used for input
 
+import api.PingPongSocketClient;
 import player.Input;
 
 /**Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -41,6 +43,9 @@ public class Game extends JFrame implements Runnable {
 	private String paddleHit;
 	private String wallHit;
 
+	private static final String URL = "wss://f523e9310ac4.ngrok.io";
+	private static PingPongSocketClient client = null;
+
 	//where execution begins
 	public static void main(String[] args){
 		new Game(); //create a new game object
@@ -48,6 +53,7 @@ public class Game extends JFrame implements Runnable {
 	
 	//constructor for starting the game
 	public Game(){
+		createConnection();
 		//Startup stuff
 		initSound();
 	    initCanvas();
@@ -106,12 +112,19 @@ public class Game extends JFrame implements Runnable {
 		gameThread.start();
 	}
 
+	private void createConnection() {
+		client = new PingPongSocketClient(URI.create(URL));
+		client.connect();
+	}
+
 	/*main game loop
 	this is run when the gameThread.start() is run*/
 	public void run(){
 		//random object for creating a ball in a random position
 		random = new Random();
-		
+
+
+
 		/*instantiate all of the game objects, once*/
 		player1 = new Paddle(Paddle.WIDTH, WINDOW_HEIGHT / 2);
 		player2 = new Paddle(WINDOW_WIDTH - Paddle.WIDTH, WINDOW_HEIGHT /2);
@@ -138,7 +151,12 @@ public class Game extends JFrame implements Runnable {
 			}
 			if (gameOver == false){
 				doplayer2Behavior(); //ai
+
 				player1.update(); //update the player object (check the bounds and update the position)
+				if(client != null && client.getConnection().isOpen()) {
+					client.send(player1.getYPos()+"");
+				}
+
 //				player2.update(); //update other paddle
 				ball.updateBall(); //update the ball object
 				destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)

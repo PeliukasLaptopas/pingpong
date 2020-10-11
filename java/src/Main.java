@@ -1,4 +1,7 @@
 import api.PingPongSocketClient;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import pong.Game;
 
 import java.net.URI;
 import java.util.Scanner;
@@ -8,21 +11,23 @@ public class Main {
     private static PingPongSocketClient client = null;
 
     public static void main(String[] args){
-//        new Game(); //create a new game object
-        createConnection();
-        // Read messages from the console and send them to the server
-        Scanner scanner = new Scanner(System.in);
-        while(true) {
-            String input = scanner.nextLine();
-            if(client != null && client.getConnection().isOpen()) {
-                client.send(input);
-                System.out.println("Sent: " + input);
-            }
-        }
-    }
+        JSONObject obj = new JSONObject();
+        obj.put("x", 100);
+        obj.put("y", 100);
 
-    private static void createConnection() {
-        client = new PingPongSocketClient(URI.create(URL));
-        client.connect();
+//        JSONArray list = new JSONArray();
+//        list.add("msg 1");
+//        list.add("msg 2");
+//        list.add("msg 3");
+//
+//        obj.put("messages", list);
+
+
+        System.out.println(obj);
+        System.out.println(obj.toJSONString());
+
+
+        new Game(); //create a new game object
+
     }
 }
