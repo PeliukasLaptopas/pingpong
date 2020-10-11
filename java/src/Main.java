@@ -1,13 +1,10 @@
-import api.MyStompSessionHandler;
-import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompSessionHandler;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.messaging.WebSocketStompClient;
+import api.PingPongSocketClient;
 import pong.Game;
 
+import java.net.URI;
+
 public class Main {
-    private static final String URL = "wss://b47c34b5efb8.ngrok.io/";
+    private static final String URL = "wss://211cb73d95bd.ngrok.io";
 
     public static void main(String[] args){
         new Game(); //create a new game object
@@ -15,12 +12,7 @@ public class Main {
     }
 
     private static void createConnection() {
-        WebSocketClient client = new StandardWebSocketClient();
-
-        WebSocketStompClient stompClient = new WebSocketStompClient(client);
-        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-
-        StompSessionHandler sessionHandler = new MyStompSessionHandler();
-        stompClient.connect(URL, sessionHandler);
+        PingPongSocketClient pingPongSocketClient = new PingPongSocketClient(URI.create(URL));
+        pingPongSocketClient.connect();
     }
 }
