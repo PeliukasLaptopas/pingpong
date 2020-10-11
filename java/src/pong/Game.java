@@ -34,17 +34,11 @@ public class Game extends JFrame implements Runnable {
 	private Input input; //instance variable for handling input
 
 	//locks for concurrency
-	private Object ballLock = new Object(); 
-	private Object player1Lock = new Object();
-	private Object player2Lock = new Object();
+	private final Object ballLock = new Object();
+	private final Object player1Lock = new Object();
+	private final Object player2Lock = new Object();
 
-	//each string is a path to an audio resource, which gets passed to custom audio class method for playback
-	private String miss;
-	private String paddleHit;
-	private String wallHit;
-
-	private static final String URL = "wss://f523e9310ac4.ngrok.io";
-	private static PingPongSocketClient client = null;
+	private PingPongSocketClient client = null;
 
 	//where execution begins
 	public static void main(String[] args){
@@ -54,22 +48,11 @@ public class Game extends JFrame implements Runnable {
 	//constructor for starting the game
 	public Game(){
 		createConnection();
-		//Startup stuff
-		initSound();
 	    initCanvas();
 		//register input to the jFrame, which is polled (in a separate thread?)
 	    input = new Input(this); 
 		//start the game
 		startGameThread();
-	} //end constructor, game initialization.
-
-	/*set up sound strings*/
-	public void initSound(){
-		//Use OS independent path manipulators so that it works on all platforms
-		 this.miss = ".." + File.separator + "sounds" + File.separator + "miss.wav";
-		 this.paddleHit = ".." + File.separator + "sounds" + File.separator + "paddle_hit.wav";
-		 this.wallHit = ".." + File.separator + "sounds" + File.separator + "wall_hit.wav";
-		 //create a new sound Handler object
 	}
 
 	//Set up Canvas which is a child of Component and add it to (this) JFrame
@@ -113,8 +96,13 @@ public class Game extends JFrame implements Runnable {
 	}
 
 	private void createConnection() {
-		client = new PingPongSocketClient(URI.create(URL));
+		String URL = "wss://f523e9310ac4.ngrok.io";
+		client = new PingPongSocketClient(URI.create(URL), this::updatePlayer2);
 		client.connect();
+	}
+
+	private void updatePlayer2(String message) {
+		player2.setPosition(Integer.parseInt(message));
 	}
 
 	/*main game loop
@@ -122,9 +110,6 @@ public class Game extends JFrame implements Runnable {
 	public void run(){
 		//random object for creating a ball in a random position
 		random = new Random();
-
-
-
 		/*instantiate all of the game objects, once*/
 		player1 = new Paddle(Paddle.WIDTH, WINDOW_HEIGHT / 2);
 		player2 = new Paddle(WINDOW_WIDTH - Paddle.WIDTH, WINDOW_HEIGHT /2);
@@ -132,7 +117,6 @@ public class Game extends JFrame implements Runnable {
 			ball = new Ball(WINDOW_WIDTH / 2, random.nextInt(150) + 150,
 					(random.nextInt(120) + 120) * (Math.PI / 180.0));
 		}
-		
 		/*Game loop should always be running*/
 		boolean wallBounce = false;
 		while (true){
@@ -149,27 +133,23 @@ public class Game extends JFrame implements Runnable {
 				System.out.println("Couldn't sleep for some reason.");	
 				ex.printStackTrace();
 			}
-			if (gameOver == false){
-				doplayer2Behavior(); //ai
+			if (!gameOver){
 
 				player1.update(); //update the player object (check the bounds and update the position)
 				if(client != null && client.getConnection().isOpen()) {
 					client.send(player1.getYPos()+"");
 				}
-
-//				player2.update(); //update other paddle
 				ball.updateBall(); //update the ball object
 				destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)
 				doCollision(); //checks for collisions between paddles and ball
 				wallBounce = checkWallBounce(); //for playing the wall sounds
 				gameOver();
-				repaint(); //repaint component (draw event in game maker), paintImmediately() is blocking (stops execution of other Threads)
 
 			} else{ //Game Over, man! 
 				ball.updateBall();
 				checkWallBounce();
-				repaint();
 			}
+			repaint(); //repaint component (draw event in game maker), paintImmediately() is blocking (stops execution of other Threads)
 		} //end while
 	}//end run
 
@@ -178,11 +158,9 @@ public class Game extends JFrame implements Runnable {
 		if (!gameOver){
 			if (input.isKeyDown(KeyEvent.VK_UP)){
 				player1.moveUp();
-				//System.out.println("UP");
 			}
 			if (input.isKeyDown(KeyEvent.VK_DOWN)){
 				player1.moveDown();
-				//System.out.println("DOWN");
 			}
 		}
 		if (gameOver && input.isKeyDown(KeyEvent.VK_ENTER)){
@@ -210,31 +188,6 @@ public class Game extends JFrame implements Runnable {
 			synchronized (ballLock) {ball = new Ball((int)(WINDOW_WIDTH * 0.85), ball_rand + 120, (ball_rand + 120) * (Math.PI / 180));}
 		}
 	}
-
-    //This method contains the AI for the other paddle. Behavior time may be different depending on platform.
-    public void doplayer2Behavior() {
-		  //progressively improves the AI based on how close you are to winning
-      if ((player2.getXPos() - ball.getXPos()) < (leftScore * 10)) { 
-        if (ball.getYPos() > player2.getYPos()) {
-          // System.out.println("AI UP");
-          player2.moveDown();
-        } else if (ball.getYPos() < player2.getYPos()) {
-          // System.out.println("AI DOWN");
-          player2.moveUp();
-        } else if (ball.getYPos() == player2.getYPos()) {
-          // System.out.println("AI STOP");
-          player2.stop();
-        }
-      }else{
-           //will either generate a 0, 1, or 2
-           int choice = random.nextInt(3);
-           //System.out.println(choice);
-           switch(choice){
-             case 0: player2.moveDown(); break;
-             case 1: player2.moveUp(); break;
-           }
-      }//end else	
-	  }//end function
 
 	//for playing the wall sounds, else-if because don't want any sounds to play or wall collision behavior to happen simultaneously
 	public boolean checkWallBounce(){
@@ -281,7 +234,7 @@ public class Game extends JFrame implements Runnable {
 	/*checks whether or not either of the paddles have scored 7 points -- if they have
 	/then destroy the paddles and restart the game.*/
 	public void gameOver(){
-		if((leftScore >= 7 || rightScore >= 7) &&  gameOver == false){
+		if((leftScore >= 7 || rightScore >= 7) && !gameOver){
 			gameOver = true;
 			synchronized(player1Lock){player1 = null;}
 			synchronized(player2Lock){player2 = null;}	
@@ -301,7 +254,7 @@ public class Game extends JFrame implements Runnable {
 			g2.setColor(Color.WHITE);
 
 			//only draw the paddles when there is still a game in progress, and don't attempt to draw paddles when they are null
-			if (gameOver == false){
+			if (!gameOver){
 				synchronized(player1Lock){ //wait until aquired lock from new game thread which has power to create and destroy the ball
 					if (player1 != null){
 						g2.fillRect( player1.getXPos(),  player1.getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw player paddle
@@ -331,6 +284,6 @@ public class Game extends JFrame implements Runnable {
 			g2.drawString("" + leftScore, WINDOW_WIDTH/2 -150, 100);
 			g2.drawString("" + rightScore, WINDOW_WIDTH/2 + 100, 100);
 
-		}//end paint method
-	}//end Canvas nested class
-}//end Game class
+		}
+	}
+}

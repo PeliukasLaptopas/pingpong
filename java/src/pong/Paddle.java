@@ -40,6 +40,10 @@ public class Paddle {
 			yPos = Game.WINDOW_HEIGHT - 110;
 		}
 	}
+
+	public void setPosition(int newYPosition) {
+		this.yPos = newYPosition;
+	}
 	
 	public void moveUp(){
 		velocity = -VELOCITY_CONSTANT;
