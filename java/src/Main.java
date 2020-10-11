@@ -1,18 +1,28 @@
 import api.PingPongSocketClient;
-import pong.Game;
 
 import java.net.URI;
+import java.util.Scanner;
 
 public class Main {
-    private static final String URL = "wss://211cb73d95bd.ngrok.io";
+    private static final String URL = "wss://f523e9310ac4.ngrok.io";
+    private static PingPongSocketClient client = null;
 
     public static void main(String[] args){
-        new Game(); //create a new game object
+//        new Game(); //create a new game object
         createConnection();
+        // Read messages from the console and send them to the server
+        Scanner scanner = new Scanner(System.in);
+        while(true) {
+            String input = scanner.nextLine();
+            if(client != null && client.getConnection().isOpen()) {
+                client.send(input);
+                System.out.println("Sent: " + input);
+            }
+        }
     }
 
     private static void createConnection() {
-        PingPongSocketClient pingPongSocketClient = new PingPongSocketClient(URI.create(URL));
-        pingPongSocketClient.connect();
+        client = new PingPongSocketClient(URI.create(URL));
+        client.connect();
     }
 }

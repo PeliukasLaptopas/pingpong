@@ -18,7 +18,7 @@ public class PingPongSocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String s) {
-
+        System.out.println("Response: " + s);
     }
 
     @Override
