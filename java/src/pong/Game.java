@@ -4,23 +4,23 @@ import javax.swing.*; //window
 import java.awt.*; //painting graphics and images
 import java.net.URI;
 import java.util.Random; //random number generator
-import java.io.File;
 import java.awt.event.KeyEvent; //includes all of the constants used for input
 
 import api.PingPongSocketClient;
 import player.Input;
+import player.SelectedPlayer;
 
 /**Implements the Runnable interface, so Game will be treated as a Thread to be executed
 Included in java.lang This class contains all of the game logic and an inner class
 for drawing the game.*/
 public class Game extends JFrame implements Runnable {
 
-	//constants 
+	//constants
 	protected static final int WINDOW_HEIGHT = 450; // the height of the game window
 	protected static final int WINDOW_WIDTH = 450; // the width of the game window
 
-	//scores placed here instead of Paddle because scores don't necessarily belong to a paddle; 
-	//didn't want extra bloat code 
+	//scores placed here instead of Paddle because scores don't necessarily belong to a paddle;
+	//didn't want extra bloat code
 	protected int leftScore = 0;
 	protected int rightScore = 0;
 
@@ -37,6 +37,7 @@ public class Game extends JFrame implements Runnable {
 	private final Object ballLock = new Object();
 	private final Object player1Lock = new Object();
 	private final Object player2Lock = new Object();
+	private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER2;
 
 	private PingPongSocketClient client = null;
 
@@ -44,13 +45,13 @@ public class Game extends JFrame implements Runnable {
 	public static void main(String[] args){
 		new Game(); //create a new game object
 	}
-	
+
 	//constructor for starting the game
 	public Game(){
 		createConnection();
 	    initCanvas();
 		//register input to the jFrame, which is polled (in a separate thread?)
-	    input = new Input(this); 
+	    input = new Input(this);
 		//start the game
 		startGameThread();
 	}
@@ -66,16 +67,16 @@ public class Game extends JFrame implements Runnable {
 		setVisible(true);
 		setSize(WINDOW_HEIGHT, WINDOW_WIDTH);
 		setVisible(true);
-	
+
 		//if the window is not resize-able the window does not open on certain Linux machines
 		setResizable(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//https://stackoverflow.com/questions/2442599/how-to-set-jframe-to-appear-centered-regardless-of-monitor-resolution
 		this.setLocationRelativeTo(null);
-		
+
 		add(myCanvas);
-		
+
 		//request focus so the JFrame is getting the input, for sure
 		requestFocus();
 	}
@@ -97,12 +98,31 @@ public class Game extends JFrame implements Runnable {
 
 	private void createConnection() {
 		String URL = "wss://f523e9310ac4.ngrok.io";
-		client = new PingPongSocketClient(URI.create(URL), this::updatePlayer2);
+		client = new PingPongSocketClient(URI.create(URL), this::updateEnemyPlayerPosition);
 		client.connect();
 	}
 
-	private void updatePlayer2(String message) {
-		player2.setPosition(Integer.parseInt(message));
+	private void updateSelectedPlayerPosition() {
+		int enemyPlayerPosition = 0;
+		if(selectedPlayer == SelectedPlayer.PLAYER1) {
+			player1.update();
+			enemyPlayerPosition = player2.getYPos();
+		} else {
+			player2.update();
+			enemyPlayerPosition = player1.getYPos();
+		}
+
+		if(client != null && client.getConnection().isOpen()) {
+			client.send(enemyPlayerPosition + "");
+		}
+	}
+
+	private void updateEnemyPlayerPosition(String message) {
+		if(selectedPlayer == SelectedPlayer.PLAYER1) {
+			player2.setPosition(Integer.parseInt(message));
+		}else {
+			player1.setPosition(Integer.parseInt(message));
+		}
 	}
 
 	/*main game loop
@@ -130,22 +150,19 @@ public class Game extends JFrame implements Runnable {
 				}
 		        Thread.sleep(delayMs);//tells the game how often to refresh
 			}catch (Exception ex){
-				System.out.println("Couldn't sleep for some reason.");	
+				System.out.println("Couldn't sleep for some reason.");
 				ex.printStackTrace();
 			}
 			if (!gameOver){
 
-				player1.update(); //update the player object (check the bounds and update the position)
-				if(client != null && client.getConnection().isOpen()) {
-					client.send(player1.getYPos()+"");
-				}
+				updateSelectedPlayerPosition();
 				ball.updateBall(); //update the ball object
 				destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)
 				doCollision(); //checks for collisions between paddles and ball
 				wallBounce = checkWallBounce(); //for playing the wall sounds
 				gameOver();
 
-			} else{ //Game Over, man! 
+			} else{ //Game Over, man!
 				ball.updateBall();
 				checkWallBounce();
 			}
@@ -157,10 +174,18 @@ public class Game extends JFrame implements Runnable {
 	public void updateInput(){
 		if (!gameOver){
 			if (input.isKeyDown(KeyEvent.VK_UP)){
-				player1.moveUp();
+				if(selectedPlayer == SelectedPlayer.PLAYER1){
+					player1.moveUp();
+				}else {
+					player2.moveUp();
+				}
 			}
 			if (input.isKeyDown(KeyEvent.VK_DOWN)){
-				player1.moveDown();
+				if(selectedPlayer == SelectedPlayer.PLAYER1){
+					player1.moveDown();
+				}else {
+					player2.moveDown();
+				}
 			}
 		}
 		if (gameOver && input.isKeyDown(KeyEvent.VK_ENTER)){
@@ -178,8 +203,8 @@ public class Game extends JFrame implements Runnable {
 		if (ball.isDestroyable()){
 			synchronized (ballLock) {ball = null;}//make sure does not get painted at same time
 			/*creates the ball in the middle of the screen*/
-			int ball_rand = random.nextInt(120); 
-			/*a ball_rand of 0 will create a ball that bounces vertically, forever */ 
+			int ball_rand = random.nextInt(120);
+			/*a ball_rand of 0 will create a ball that bounces vertically, forever */
 			while (ball_rand == 0){
 			      ball_rand = random.nextInt(120);
 			}
@@ -206,7 +231,7 @@ public class Game extends JFrame implements Runnable {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -237,7 +262,7 @@ public class Game extends JFrame implements Runnable {
 		if((leftScore >= 7 || rightScore >= 7) && !gameOver){
 			gameOver = true;
 			synchronized(player1Lock){player1 = null;}
-			synchronized(player2Lock){player2 = null;}	
+			synchronized(player2Lock){player2 = null;}
 		}
 	}
 	//Nested class
@@ -264,7 +289,7 @@ public class Game extends JFrame implements Runnable {
 					if (player2 !=null){
 						g2.fillRect( player2.getXPos(),  player2.getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw computer paddle
 					}
-				}	
+				}
 			}else{
 				g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
 				g2.drawString("Press the 'enter' key to start a new game.", 55, WINDOW_HEIGHT - 100);
