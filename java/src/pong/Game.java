@@ -103,17 +103,17 @@ public class Game extends JFrame implements Runnable {
 	}
 
 	private void updateSelectedPlayerPosition() {
-		int enemyPlayerPosition = 0;
+		int selectedPlayerPosition = 0;
 		if(selectedPlayer == SelectedPlayer.PLAYER1) {
 			player1.update();
-			enemyPlayerPosition = player2.getYPos();
+			selectedPlayerPosition = player1.getYPos();
 		} else {
 			player2.update();
-			enemyPlayerPosition = player1.getYPos();
+			selectedPlayerPosition = player2.getYPos();
 		}
 
 		if(client != null && client.getConnection().isOpen()) {
-			client.send(enemyPlayerPosition + "");
+			client.send(selectedPlayerPosition + "");
 		}
 	}
 
