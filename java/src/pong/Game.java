@@ -9,6 +9,7 @@ import java.awt.event.KeyEvent;
 
 import api.PingPongSocketClient;
 import com.google.gson.Gson;
+import player.Player;
 import player.SelectedPlayer;
 
 /**
@@ -28,18 +29,17 @@ public class Game extends JFrame implements Runnable, KeyListener {
     protected int rightScore = 0;
 
     //instance variables
-    private Paddle player1; //player paddle
-    private Paddle player2; //enemy paddle
+    private Player player1; //player paddle
+    private Player player2; //enemy paddle
+    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER2;
     private Ball ball;
     private Random random = new Random(); //for generating random integers
     private boolean gameOver = true;
-    private boolean isHost = true;
 
     //locks for concurrency
     private final Object ballLock = new Object();
     private final Object player1Lock = new Object();
     private final Object player2Lock = new Object();
-    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER1;
     private int currentPlayerLocation = 0;
     private Gson gson = new Gson(); // Could be in a singleton
 
@@ -55,8 +55,28 @@ public class Game extends JFrame implements Runnable, KeyListener {
         addKeyListener(this);
         createConnection();
         initCanvas();
+        createPlayers();
         //start the game
         startGameThread();
+    }
+
+    private void createPlayers() {
+        player1 = new Player(true, new Paddle(Paddle.WIDTH, WINDOW_HEIGHT / 2));
+        player2 = new Player(false, new Paddle(WINDOW_WIDTH - Paddle.WIDTH, WINDOW_HEIGHT / 2));
+    }
+
+    private Player getSelectedPlayer() {
+        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+            return player1;
+        }
+        return player2;
+    }
+
+    private Player getEnemyPlayer() {
+        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+            return player2;
+        }
+        return player1;
     }
 
     //Set up Canvas which is a child of Component and add it to (this) JFrame
@@ -117,12 +137,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private void updateSelectedPlayerPosition() {
-        int selectedPlayerPosition = 0;
-        if (selectedPlayer == SelectedPlayer.PLAYER1) {
-            selectedPlayerPosition = player1.getYPos();
-        } else {
-            selectedPlayerPosition = player2.getYPos();
-        }
+        int selectedPlayerPosition = getSelectedPlayer().getPaddle().getYPos();
 
         if (client != null && client.getConnection().isOpen()) {
             if (currentPlayerLocation == selectedPlayerPosition) {
@@ -134,17 +149,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private void updateEnemyPlayerPosition(String message) {
-        if (selectedPlayer == SelectedPlayer.PLAYER1) {
-            player2.setPosition(Integer.parseInt(message));
-        } else {
-            player1.setPosition(Integer.parseInt(message));
-        }
+        getEnemyPlayer().getPaddle().setPosition(Integer.parseInt(message));
     }
 
     public void run() {
-        /*instantiate all of the game objects, once*/
-        player1 = new Paddle(Paddle.WIDTH, WINDOW_HEIGHT / 2);
-        player2 = new Paddle(WINDOW_WIDTH - Paddle.WIDTH, WINDOW_HEIGHT / 2);
 		synchronized (ballLock) { // We will create the ball - make sure it doesn't get painted at the same time
 			ball = new Ball(WINDOW_WIDTH / 2 - Ball.RADIUS, WINDOW_HEIGHT / 2 - Ball.RADIUS, 0);
 		}
@@ -164,7 +172,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
 			}
             if (true) {
                 updateSelectedPlayerPosition();
-                if(isHost) {
+                if(getSelectedPlayer().isHost()) {
                     ball.updateBall();
                     destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)
                     doCollision(); //checks for collisions between paddles and ball
@@ -228,8 +236,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
     //Check for the moment where the paddles and the ball collide
 	public void doCollision(){
 		//left paddle collision
-		for (int colY =  player1.getYPos(); colY <  player1.getYPos() + Paddle.HEIGHT; colY++){
-			if (  ball.getXPos() ==  player1.getXPos() &&   ball.getYPos() + Ball.RADIUS == colY){
+		for (int colY =  player1.getPaddle().getYPos(); colY <  player1.getPaddle().getYPos() + Paddle.HEIGHT; colY++){
+			if (  ball.getXPos() ==  player1.getPaddle().getXPos() &&   ball.getYPos() + Ball.RADIUS == colY){
 				ball.reverseXVelocity();
 				ball.setYVelocity(0);
 				//System.out.println("COLLISION");
@@ -237,8 +245,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
 		}
 
 		//right paddle collision
-		for (int colY =  player2.getYPos(); colY <  player2.getYPos() + Paddle.HEIGHT; colY++){
-			if (ball.getXPos() ==  player2.getXPos() - Paddle.WIDTH &&  ball.getYPos() + Ball.RADIUS == colY){
+		for (int colY =  player2.getPaddle().getYPos(); colY <  player2.getPaddle().getYPos() + Paddle.HEIGHT; colY++){
+			if (ball.getXPos() ==  player2.getPaddle().getXPos() - Paddle.WIDTH &&  ball.getYPos() + Ball.RADIUS == colY){
 				ball.reverseXVelocity();
 				//System.out.println("COLLISION");
 				ball.setYVelocity(0);
@@ -252,10 +260,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
         if ((leftScore >= 7 || rightScore >= 7) && !gameOver) {
             gameOver = true;
             synchronized (player1Lock) {
-                player1 = null;
+                player1.setPaddle(null);
             }
             synchronized (player2Lock) {
-                player2 = null;
+                player2.setPaddle(null);
             }
         }
     }
@@ -267,19 +275,11 @@ public class Game extends JFrame implements Runnable, KeyListener {
     public void keyPressed(KeyEvent keyEvent) {
         int keycode = keyEvent.getKeyCode();
         if (keycode == KeyEvent.VK_UP) {
-            if (selectedPlayer == SelectedPlayer.PLAYER2) {
-                player2.moveUp();
-            } else {
-                player1.moveUp();
-            }
+            getSelectedPlayer().getPaddle().moveUp();
             repaint();
         }
         if (keycode == KeyEvent.VK_DOWN) {
-            if (selectedPlayer == SelectedPlayer.PLAYER2) {
-                player2.moveDown();
-            } else {
-                player1.moveDown();
-            }
+            getSelectedPlayer().getPaddle().moveDown();
             repaint();
         }
         if (gameOver && keycode == KeyEvent.VK_ENTER) {
@@ -287,10 +287,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
             rightScore = 0;
             gameOver = false;
             synchronized (player1Lock) {
-                player1 = new Paddle(25, WINDOW_HEIGHT / 2);
+                player1.setPaddle(new Paddle(25, WINDOW_HEIGHT / 2));
             }
             synchronized (player2Lock) {
-                player2 = new Paddle(WINDOW_WIDTH - 50, WINDOW_HEIGHT / 2);
+                player2.setPaddle(new Paddle(WINDOW_WIDTH - 50, WINDOW_HEIGHT / 2));
             }
         }
     }
@@ -315,12 +315,12 @@ public class Game extends JFrame implements Runnable, KeyListener {
             if (!gameOver) {
                 synchronized (player1Lock) { //wait until aquired lock from new game thread which has power to create and destroy the ball
                     if (player1 != null) {
-                        g2.fillRect(player1.getXPos(), player1.getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw player paddle
+                        g2.fillRect(player1.getPaddle().getXPos(), player1.getPaddle().getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw player paddle
                     }
                 }
                 synchronized (player2Lock) {
                     if (player2 != null) {
-                        g2.fillRect(player2.getXPos(), player2.getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw computer paddle
+                        g2.fillRect(player2.getPaddle().getXPos(), player2.getPaddle().getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw computer paddle
                     }
                 }
             } else {
