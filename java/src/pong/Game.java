@@ -9,10 +9,13 @@ import java.awt.event.KeyEvent;
 
 import api.PingPongSocketClient;
 import com.google.gson.Gson;
+import factory.Paddle;
 import factory.PaddleFactory;
 import factory.PaddleType;
+import paddles.SimplePaddle;
 import player.Player;
 import player.SelectedPlayer;
+import utils.CanvasConstants;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -21,9 +24,6 @@ import player.SelectedPlayer;
  */
 public class Game extends JFrame implements Runnable, KeyListener {
 
-    //constants
-    protected static final int WINDOW_HEIGHT = 500; // the height of the game window
-    protected static final int WINDOW_WIDTH = 500; // the width of the game window
     // Scores
     protected int leftScore = 0;
     protected int rightScore = 0;
@@ -96,7 +96,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
         setLayout(new GridLayout());
         setTitle("Java Pong");
         setVisible(true);
-        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        setSize(CanvasConstants.WINDOW_WIDTH, CanvasConstants.WINDOW_HEIGHT);
         setVisible(true);
 
         //if the window is not resize-able the window does not open on certain Linux machines
@@ -162,7 +162,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
     public void run() {
 		synchronized (ballLock) { // We will create the ball - make sure it doesn't get painted at the same time
-			ball = new Ball(WINDOW_WIDTH / 2 - Ball.RADIUS, WINDOW_HEIGHT / 2 - Ball.RADIUS, 0);
+			ball = new Ball(CanvasConstants.WINDOW_WIDTH / 2 - Ball.RADIUS, CanvasConstants.WINDOW_HEIGHT / 2 - Ball.RADIUS, 0);
 		}
         /*Game loop should always be running*/
         boolean wallBounce = false;
@@ -215,16 +215,16 @@ public class Game extends JFrame implements Runnable, KeyListener {
             //System.out.println("ball seed " + ball_rand);
             //don't put the ball in the middle, it's impossible to react to in time.  Put it closer to the edge of the screen.
             synchronized (ballLock) {
-                ball = new Ball((int) (WINDOW_WIDTH * 0.85), ball_rand + 120, (ball_rand + 120) * (Math.PI / 180));
+                ball = new Ball((int) (CanvasConstants.WINDOW_WIDTH * 0.85), ball_rand + 120, (ball_rand + 120) * (Math.PI / 180));
             }
         }
     }
 
     //for playing the wall sounds, else-if because don't want any sounds to play or wall collision behavior to happen simultaneously
     public boolean checkWallBounce() {
-        if ((ball.getYPos() >= (WINDOW_HEIGHT - (6 * Ball.RADIUS))) || (ball.getYPos() <= 0)) {
+        if ((ball.getYPos() >= (CanvasConstants.WINDOW_HEIGHT - (6 * Ball.RADIUS))) || (ball.getYPos() <= 0)) {
             //System.out.println("Top or bottom \'wall\' was hit");
-        } else if (ball.getXPos() == (WINDOW_WIDTH - (4 * Ball.RADIUS))) {
+        } else if (ball.getXPos() == (CanvasConstants.WINDOW_WIDTH - (4 * Ball.RADIUS))) {
             if (gameOver) {
             } else {
                 leftScore++;
@@ -316,24 +316,24 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
             //drawing the 'sprites' for the game
             g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, WINDOW_HEIGHT, WINDOW_WIDTH); // fill the whole screen black
+            g2.fillRect(0, 0, CanvasConstants.WINDOW_HEIGHT, CanvasConstants.WINDOW_WIDTH); // fill the whole screen black
             g2.setColor(Color.WHITE);
 
             //only draw the paddles when there is still a game in progress, and don't attempt to draw paddles when they are null
             if (!gameOver) {
                 synchronized (player1Lock) { //wait until aquired lock from new game thread which has power to create and destroy the ball
                     if (player1 != null) {
-                        g2.fillRect(player1.getPaddle().getXPosition(), player1.getPaddle().getYPosition(), SimplePaddle.WIDTH, SimplePaddle.HEIGHT); // draw player paddle
+                        player1.getPaddle().draw(g2);
                     }
                 }
                 synchronized (player2Lock) {
                     if (player2 != null) {
-                        g2.fillRect(player2.getPaddle().getXPosition(), player2.getPaddle().getYPosition(), SimplePaddle.WIDTH, SimplePaddle.HEIGHT); // draw computer paddle
+                        player2.getPaddle().draw(g2);
                     }
                 }
             } else {
                 g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-                g2.drawString("Press the 'enter' key to start a new game.", 55, WINDOW_HEIGHT - 100);
+                g2.drawString("Press the 'enter' key to start a new game.", 55, CanvasConstants.WINDOW_HEIGHT - 100);
             }
 
             synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
@@ -342,13 +342,13 @@ public class Game extends JFrame implements Runnable, KeyListener {
                 }
             }
 
-            for (int i = 0; i < WINDOW_WIDTH; i += 10) { //dotted line
-                g2.drawLine(WINDOW_WIDTH / 2, i, WINDOW_WIDTH / 2, i + 5);
+            for (int i = 0; i < CanvasConstants.WINDOW_WIDTH; i += 10) { //dotted line
+                g2.drawLine(CanvasConstants.WINDOW_WIDTH / 2, i, CanvasConstants.WINDOW_WIDTH / 2, i + 5);
             }
 
             g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 72));
-            g2.drawString("" + leftScore, WINDOW_WIDTH / 2 - 150, 100);
-            g2.drawString("" + rightScore, WINDOW_WIDTH / 2 + 100, 100);
+            g2.drawString("" + leftScore, CanvasConstants.WINDOW_WIDTH / 2 - 150, 100);
+            g2.drawString("" + rightScore, CanvasConstants.WINDOW_WIDTH / 2 + 100, 100);
         }
     }
 }

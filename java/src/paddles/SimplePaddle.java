@@ -1,10 +1,10 @@
-package pong;
+package paddles;
 
 import factory.Paddle;
 import player.SelectedPlayer;
+import utils.CanvasConstants;
 
-import static pong.Game.WINDOW_HEIGHT;
-import static pong.Game.WINDOW_WIDTH;
+import java.awt.*;
 
 public class SimplePaddle implements Paddle {
 
@@ -18,11 +18,11 @@ public class SimplePaddle implements Paddle {
     public SimplePaddle(SelectedPlayer player, int speed) {
         this.speed = speed;
         int xPos;
-        int yPos = WINDOW_HEIGHT / 2;
+        int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
         if (player == SelectedPlayer.PLAYER1) {
             xPos = SimplePaddle.WIDTH;
         } else {
-            xPos = WINDOW_WIDTH - WIDTH * 3;
+            xPos = CanvasConstants.WINDOW_WIDTH - WIDTH * 3;
         }
         this.xPosition = xPos;
         this.yPosition = yPos;
@@ -40,7 +40,7 @@ public class SimplePaddle implements Paddle {
 
     @Override
     public void moveDown() {
-        yPosition = Math.min(yPosition + speed, WINDOW_HEIGHT - 110);
+        yPosition = Math.min(yPosition + speed, CanvasConstants.WINDOW_HEIGHT - 110);
     }
 
     @Override
@@ -51,5 +51,10 @@ public class SimplePaddle implements Paddle {
     @Override
     public int getYPosition() {
         return yPosition;
+    }
+
+    @Override
+    public void draw(Graphics2D g2) {
+        g2.fillRect(xPosition, yPosition, SimplePaddle.WIDTH, SimplePaddle.HEIGHT);
     }
 }

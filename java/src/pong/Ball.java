@@ -1,5 +1,7 @@
 package pong;
 
+import utils.CanvasConstants;
+
 public class Ball {
     public static final int RADIUS = 10; //size of the Ball
 
@@ -10,13 +12,13 @@ public class Ball {
 
     public Ball(int xPos, int yPos, double angle) {
         //in case a crazy person tries to create a Ball with values outside of the Game screen
-        if ((yPos >= (Game.WINDOW_HEIGHT - (6 * RADIUS)))
+        if ((yPos >= (CanvasConstants.WINDOW_HEIGHT - (6 * RADIUS)))
                 || (yPos <= 0)
-                || (xPos == (Game.WINDOW_WIDTH - (4 * RADIUS)))
+                || (xPos == (CanvasConstants.WINDOW_WIDTH - (4 * RADIUS)))
                 || (xPos == 0)) {
             //then set ball x and y to be middle of the screen
-            int x = Game.WINDOW_WIDTH / 2;
-            int y = Game.WINDOW_HEIGHT / 2;
+            int x = CanvasConstants.WINDOW_WIDTH / 2;
+            int y = CanvasConstants.WINDOW_HEIGHT / 2;
             position = new BallPosition(x, y);
         } else {
             position = new BallPosition(xPos, yPos);
@@ -38,7 +40,7 @@ public class Ball {
         position.setY(position.getY() + yVelocity);
         //System.out.println(angle);
         //right bound checking
-        if (position.getX() > Game.WINDOW_WIDTH - (4 * RADIUS)) {
+        if (position.getX() > CanvasConstants.WINDOW_WIDTH - (4 * RADIUS)) {
             reverseXVelocity();
             destroyable = true;
         }
@@ -48,7 +50,7 @@ public class Ball {
             destroyable = true;
         }
         //down bound checking
-        if (position.getY() > Game.WINDOW_HEIGHT - (6 * RADIUS)) {
+        if (position.getY() > CanvasConstants.WINDOW_HEIGHT - (6 * RADIUS)) {
             reverseYVelocity();
 
         }

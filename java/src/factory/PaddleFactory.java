@@ -1,7 +1,7 @@
 package factory;
 
 import player.SelectedPlayer;
-import pong.SimplePaddle;
+import paddles.SimplePaddle;
 
 public class PaddleFactory {
 
