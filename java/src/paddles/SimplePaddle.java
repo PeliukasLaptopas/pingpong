@@ -14,14 +14,16 @@ public class SimplePaddle implements Paddle {
 
     private int speed;
     private int xPosition, yPosition;
+    private SelectedPlayer selectedPlayer;
 
     //constructor
     public SimplePaddle(SelectedPlayer player, int speed) {
+        this.selectedPlayer = player;
         this.speed = speed;
         int xPos;
         int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
         if (player == SelectedPlayer.PLAYER1) {
-            xPos = SimplePaddle.WIDTH;
+            xPos = WIDTH;
         } else {
             xPos = CanvasConstants.WINDOW_WIDTH - WIDTH * 3;
         }
@@ -41,7 +43,7 @@ public class SimplePaddle implements Paddle {
 
     @Override
     public void moveDown() {
-        yPosition = Math.min(yPosition + speed, CanvasConstants.WINDOW_HEIGHT - 110);
+        yPosition = Math.min(yPosition + speed, CanvasConstants.WINDOW_HEIGHT - HEIGHT);
     }
 
     @Override
@@ -56,13 +58,14 @@ public class SimplePaddle implements Paddle {
 
     @Override
     public void draw(Graphics2D g2) {
-        g2.fillRect(xPosition, yPosition, SimplePaddle.WIDTH, SimplePaddle.HEIGHT);
+        g2.fillRect(xPosition, yPosition, WIDTH, HEIGHT);
     }
 
     @Override
     public void doCollision(Ball ball) {
-        for (int colY = yPosition; colY < yPosition + SimplePaddle.HEIGHT; colY++) {
-            if (ball.getXPos() == xPosition && ball.getYPos() + Ball.RADIUS == colY) {
+        int xPos = (selectedPlayer == SelectedPlayer.PLAYER1) ? xPosition : xPosition - WIDTH;
+        for (int colY = yPosition; colY < yPosition + HEIGHT; colY++) {
+            if (ball.getXPos() == xPos && ball.getYPos() + Ball.RADIUS == colY) {
                 ball.reverseXVelocity();
                 ball.setYVelocity(0);
             }
