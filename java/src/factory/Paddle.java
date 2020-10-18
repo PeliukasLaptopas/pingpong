@@ -1,6 +1,6 @@
 package factory;
 
-import pong.Ball;
+import ball.Ball;
 
 import java.awt.*;
 

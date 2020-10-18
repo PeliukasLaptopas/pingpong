@@ -2,7 +2,7 @@ package paddles;
 
 import factory.Paddle;
 import player.SelectedPlayer;
-import pong.Ball;
+import ball.Ball;
 import utils.CanvasConstants;
 
 import java.awt.*;

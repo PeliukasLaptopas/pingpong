@@ -1,5 +1,3 @@
-package pong;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyListener;
@@ -8,11 +6,11 @@ import java.util.Random;
 import java.awt.event.KeyEvent;
 
 import api.PingPongSocketClient;
+import ball.Ball;
+import ball.BallPosition;
 import com.google.gson.Gson;
-import factory.Paddle;
 import factory.PaddleFactory;
 import factory.PaddleType;
-import paddles.SimplePaddle;
 import player.Player;
 import player.SelectedPlayer;
 import utils.CanvasConstants;

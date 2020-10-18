@@ -1,4 +1,4 @@
-package pong;
+package ball;
 
 import com.google.gson.Gson;
 
