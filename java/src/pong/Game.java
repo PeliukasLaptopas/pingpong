@@ -9,6 +9,8 @@ import java.awt.event.KeyEvent;
 
 import api.PingPongSocketClient;
 import com.google.gson.Gson;
+import factory.PaddleFactory;
+import factory.PaddleType;
 import player.Player;
 import player.SelectedPlayer;
 
@@ -20,30 +22,30 @@ import player.SelectedPlayer;
 public class Game extends JFrame implements Runnable, KeyListener {
 
     //constants
-    protected static final int WINDOW_HEIGHT = 450; // the height of the game window
-    protected static final int WINDOW_WIDTH = 450; // the width of the game window
-
-    //scores placed here instead of Paddle because scores don't necessarily belong to a paddle;
-    //didn't want extra bloat code
+    protected static final int WINDOW_HEIGHT = 500; // the height of the game window
+    protected static final int WINDOW_WIDTH = 500; // the width of the game window
+    // Scores
     protected int leftScore = 0;
     protected int rightScore = 0;
-
     //instance variables
-    private Player player1; //player paddle
-    private Player player2; //enemy paddle
-    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER2;
     private Ball ball;
     private Random random = new Random(); //for generating random integers
     private boolean gameOver = true;
-
     //locks for concurrency
     private final Object ballLock = new Object();
     private final Object player1Lock = new Object();
     private final Object player2Lock = new Object();
-    private int currentPlayerLocation = 0;
+    // Utils
     private Gson gson = new Gson(); // Could be in a singleton
-
+    // Sockets
     private PingPongSocketClient client = null;
+    // Players
+    private Player player1; //player paddle
+    private Player player2; //enemy paddle
+    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER2;
+    private int currentPlayerYPosition = 0;
+    // Paddles
+    private PaddleFactory paddleFactory = new PaddleFactory();
 
     //where execution begins
     public static void main(String[] args) {
@@ -61,8 +63,14 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private void createPlayers() {
-        player1 = new Player(true, new Paddle(Paddle.WIDTH, WINDOW_HEIGHT / 2));
-        player2 = new Player(false, new Paddle(WINDOW_WIDTH - Paddle.WIDTH, WINDOW_HEIGHT / 2));
+        player1 = new Player(
+                true,
+                paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1)
+        );
+        player2 = new Player(
+                false,
+                paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2)
+        );
     }
 
     private Player getSelectedPlayer() {
@@ -88,7 +96,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
         setLayout(new GridLayout());
         setTitle("Java Pong");
         setVisible(true);
-        setSize(WINDOW_HEIGHT, WINDOW_WIDTH);
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setVisible(true);
 
         //if the window is not resize-able the window does not open on certain Linux machines
@@ -137,19 +145,19 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private void updateSelectedPlayerPosition() {
-        int selectedPlayerPosition = getSelectedPlayer().getPaddle().getYPos();
+        int selectedPlayerPosition = getSelectedPlayer().getPaddle().getYPosition();
 
         if (client != null && client.getConnection().isOpen()) {
-            if (currentPlayerLocation == selectedPlayerPosition) {
+            if (currentPlayerYPosition == selectedPlayerPosition) {
                 return;
             }
-            currentPlayerLocation = selectedPlayerPosition;
+            currentPlayerYPosition = selectedPlayerPosition;
             client.send(selectedPlayerPosition + "");
         }
     }
 
     private void updateEnemyPlayerPosition(String message) {
-        getEnemyPlayer().getPaddle().setPosition(Integer.parseInt(message));
+        getEnemyPlayer().getPaddle().setYPosition(Integer.parseInt(message));
     }
 
     public void run() {
@@ -236,8 +244,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
     //Check for the moment where the paddles and the ball collide
 	public void doCollision(){
 		//left paddle collision
-		for (int colY =  player1.getPaddle().getYPos(); colY <  player1.getPaddle().getYPos() + Paddle.HEIGHT; colY++){
-			if (  ball.getXPos() ==  player1.getPaddle().getXPos() &&   ball.getYPos() + Ball.RADIUS == colY){
+		for (int colY = player1.getPaddle().getYPosition(); colY <  player1.getPaddle().getYPosition() + SimplePaddle.HEIGHT; colY++){
+			if (  ball.getXPos() ==  player1.getPaddle().getXPosition() &&   ball.getYPos() + Ball.RADIUS == colY){
 				ball.reverseXVelocity();
 				ball.setYVelocity(0);
 				//System.out.println("COLLISION");
@@ -245,8 +253,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
 		}
 
 		//right paddle collision
-		for (int colY =  player2.getPaddle().getYPos(); colY <  player2.getPaddle().getYPos() + Paddle.HEIGHT; colY++){
-			if (ball.getXPos() ==  player2.getPaddle().getXPos() - Paddle.WIDTH &&  ball.getYPos() + Ball.RADIUS == colY){
+		for (int colY = player2.getPaddle().getYPosition(); colY <  player2.getPaddle().getYPosition() + SimplePaddle.HEIGHT; colY++){
+			if (ball.getXPos() ==  player2.getPaddle().getXPosition() - SimplePaddle.WIDTH &&  ball.getYPos() + Ball.RADIUS == colY){
 				ball.reverseXVelocity();
 				//System.out.println("COLLISION");
 				ball.setYVelocity(0);
@@ -287,10 +295,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
             rightScore = 0;
             gameOver = false;
             synchronized (player1Lock) {
-                player1.setPaddle(new Paddle(25, WINDOW_HEIGHT / 2));
+                player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
             }
             synchronized (player2Lock) {
-                player2.setPaddle(new Paddle(WINDOW_WIDTH - 50, WINDOW_HEIGHT / 2));
+                player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
             }
         }
     }
@@ -315,12 +323,12 @@ public class Game extends JFrame implements Runnable, KeyListener {
             if (!gameOver) {
                 synchronized (player1Lock) { //wait until aquired lock from new game thread which has power to create and destroy the ball
                     if (player1 != null) {
-                        g2.fillRect(player1.getPaddle().getXPos(), player1.getPaddle().getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw player paddle
+                        g2.fillRect(player1.getPaddle().getXPosition(), player1.getPaddle().getYPosition(), SimplePaddle.WIDTH, SimplePaddle.HEIGHT); // draw player paddle
                     }
                 }
                 synchronized (player2Lock) {
                     if (player2 != null) {
-                        g2.fillRect(player2.getPaddle().getXPos(), player2.getPaddle().getYPos(), Paddle.WIDTH, Paddle.HEIGHT); // draw computer paddle
+                        g2.fillRect(player2.getPaddle().getXPosition(), player2.getPaddle().getYPosition(), SimplePaddle.WIDTH, SimplePaddle.HEIGHT); // draw computer paddle
                     }
                 }
             } else {
