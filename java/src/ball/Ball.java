@@ -13,12 +13,6 @@ public class Ball {
     private BallPosition position;
     //Collision handling
     private Timer lastCollisionTimer = new Timer();
-    private TimerTask onCollisionTask = new TimerTask() {
-        @Override
-        public void run() {
-            isCollisionEnabled = true;
-        }
-    };
     private boolean isCollisionEnabled = true;
     private boolean destroyable = false; //is this field necessary?
 
@@ -46,10 +40,21 @@ public class Ball {
         System.out.println(angle);
     }
 
+    private TimerTask createCollisionTimerTask() {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                isCollisionEnabled = true;
+            }
+        };
+    }
+
     public void onCollision() {
         if(isCollisionEnabled) {
             isCollisionEnabled = false;
-            lastCollisionTimer.schedule(onCollisionTask, 100);
+            lastCollisionTimer.cancel();
+            lastCollisionTimer = new Timer();
+            lastCollisionTimer.schedule(createCollisionTimerTask(), 1000);
             reverseXVelocity();
             setYVelocity(0);
         }
