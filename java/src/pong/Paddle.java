@@ -4,10 +4,9 @@ public class Paddle {
 
 	public static final int WIDTH = 13; //how wide the paddle is
 	public static final int HEIGHT = 70; //how tall the paddle is
-	private static final int VELOCITY_CONSTANT = 2; //gets rid of magic number 
 
+	private int speed = 10;
 	private int xPos, yPos;
-	private int velocity;
 	
 	//constructor 
 	public Paddle(int xPos, int yPos) {
@@ -19,42 +18,17 @@ public class Paddle {
 			this.yPos = yPos;
 		}
 	}
-	
-	//update the position of the paddles
-	public void update(){
-		//update the yPos
-		yPos += velocity;
-		
-		//decay the velocity to zero
-		if (velocity != 0) {
-			velocity = velocity - (velocity / java.lang.Math.abs(velocity));
-		}
-		
-		//top of the screen
-		if (yPos < 0){
-			yPos = 0;
-		}
-		
-		//bottom of the screen
-		if (yPos > Game.WINDOW_HEIGHT - 110){
-			yPos = Game.WINDOW_HEIGHT - 110;
-		}
-	}
 
 	public void setPosition(int newYPosition) {
 		this.yPos = newYPosition;
 	}
 	
 	public void moveUp(){
-		velocity = -VELOCITY_CONSTANT;
+		yPos = Math.max(yPos - speed, 0);
 	}
 
 	public void moveDown(){
-		velocity = VELOCITY_CONSTANT;
-	}
-
-	public void stop(){
-		velocity = 0;
+		yPos = Math.min(yPos + speed, Game.WINDOW_HEIGHT - 110);
 	}
 	
 	//getter
@@ -66,9 +40,4 @@ public class Paddle {
 	public int getYPos() {
 		return yPos;
 	}
-
-	public int getVelocity(){
-		return velocity;
-	}
-	
 }
