@@ -43,7 +43,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
     private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER1;
     private int currentPlayerYPosition = 0;
     // Paddles
-    private PaddleFactory paddleFactory = new PaddleFactory();
+    private PaddleFactory paddleFactory = PaddleFactory.getInstance();
 
     //where execution begins
     public static void main(String[] args) {
