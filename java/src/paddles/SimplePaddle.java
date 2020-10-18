@@ -6,6 +6,7 @@ import pong.Ball;
 import utils.CanvasConstants;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 public class SimplePaddle implements Paddle {
 
@@ -14,11 +15,10 @@ public class SimplePaddle implements Paddle {
 
     private int speed;
     private int xPosition, yPosition;
-    private SelectedPlayer selectedPlayer;
+    private Shape rect;
 
     //constructor
     public SimplePaddle(SelectedPlayer player, int speed) {
-        this.selectedPlayer = player;
         this.speed = speed;
         int xPos;
         int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
@@ -58,17 +58,14 @@ public class SimplePaddle implements Paddle {
 
     @Override
     public void draw(Graphics2D g2) {
-        g2.fillRect(xPosition, yPosition, WIDTH, HEIGHT);
+        rect = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
+        g2.fill(rect);
     }
 
     @Override
     public void doCollision(Ball ball) {
-        int xPos = (selectedPlayer == SelectedPlayer.PLAYER1) ? xPosition : xPosition - WIDTH;
-        for (int colY = yPosition; colY < yPosition + HEIGHT; colY++) {
-            if (ball.getXPos() <= xPos && ball.getYPos() + Ball.RADIUS == colY) {
-                ball.reverseXVelocity();
-                ball.setYVelocity(0);
-            }
+        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), Ball.RADIUS, Ball.RADIUS)) {
+            ball.onCollision();
         }
     }
 }

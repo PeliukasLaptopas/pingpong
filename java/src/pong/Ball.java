@@ -2,12 +2,24 @@ package pong;
 
 import utils.CanvasConstants;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class Ball {
     public static final int RADIUS = 10; //size of the Ball
 
     private int directionVector = 2;
     private int xVelocity, yVelocity;
     private BallPosition position;
+    //Collision handling
+    private Timer lastCollisionTimer = new Timer();
+    private TimerTask onCollisionTask = new TimerTask() {
+        @Override
+        public void run() {
+            isCollisionEnabled = true;
+        }
+    };
+    private boolean isCollisionEnabled = true;
     private boolean destroyable = false; //is this field necessary?
 
     public Ball(int xPos, int yPos, double angle) {
@@ -32,6 +44,15 @@ public class Ball {
         yVelocity = (int) (Math.sin(angle) * (double) directionVector);
         destroyable = false;
         System.out.println(angle);
+    }
+
+    public void onCollision() {
+        if(isCollisionEnabled) {
+            isCollisionEnabled = false;
+            lastCollisionTimer.schedule(onCollisionTask, 100);
+            reverseXVelocity();
+            setYVelocity(0);
+        }
     }
 
     //update position

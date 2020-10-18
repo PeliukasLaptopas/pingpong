@@ -17,13 +17,12 @@ public class AngledPaddle implements Paddle {
     private int speed;
     private int angle;
     private int xPosition, yPosition;
-    private SelectedPlayer selectedPlayer;
+    private Shape rect;
 
     //constructor
     public AngledPaddle(SelectedPlayer player, int speed, int angle) {
         // Angle must be between 0 - 90
         this.angle = Math.min(90, Math.max(0, angle));
-        this.selectedPlayer = player;
         this.speed = speed;
         int xPos;
         int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
@@ -70,18 +69,14 @@ public class AngledPaddle implements Paddle {
         Rectangle2D rect = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
         AffineTransform aff = new AffineTransform();
         aff.rotate(Math.toRadians(angle), xPosition, yPosition);
-        Shape newRect = aff.createTransformedShape(rect);
-        g2.fill(newRect);
+        this.rect = aff.createTransformedShape(rect);
+        g2.fill(this.rect);
     }
 
     @Override
     public void doCollision(Ball ball) {
-        int xPos = (selectedPlayer == SelectedPlayer.PLAYER1) ? xPosition : xPosition - WIDTH;
-        for (int colY = yPosition; colY < yPosition + HEIGHT; colY++) {
-            if (ball.getXPos() == xPos && ball.getYPos() + Ball.RADIUS == colY) {
-                ball.reverseXVelocity();
-                ball.setYVelocity(0);
-            }
+        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), Ball.RADIUS, Ball.RADIUS)) {
+            ball.onCollision();
         }
     }
 
