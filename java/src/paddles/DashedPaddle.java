@@ -2,25 +2,28 @@ package paddles;
 
 import factory.Paddle;
 import player.SelectedPlayer;
+import pong.Ball;
 import utils.CanvasConstants;
 
 import java.awt.*;
 
-public class AngledPaddle implements Paddle {
+public class DashedPaddle implements Paddle {
 
     public static final int WIDTH = 13; //how wide the paddle is
-    public static final int HEIGHT = 70; //how tall the paddle is
+    public static final int HEIGHT = 100; //how tall the paddle is
 
     private int speed;
+    private int dashes;
     private int xPosition, yPosition;
 
     //constructor
-    public AngledPaddle(SelectedPlayer player, int speed) {
+    public DashedPaddle(SelectedPlayer player, int speed, int dashes) {
+        this.dashes = dashes;
         this.speed = speed;
         int xPos;
         int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
         if (player == SelectedPlayer.PLAYER1) {
-            xPos = AngledPaddle.WIDTH;
+            xPos = DashedPaddle.WIDTH;
         } else {
             xPos = CanvasConstants.WINDOW_WIDTH - WIDTH * 3;
         }
@@ -55,6 +58,16 @@ public class AngledPaddle implements Paddle {
 
     @Override
     public void draw(Graphics2D g2) {
+        int parts = dashes * 2 - 1;
+        int dashHeight = HEIGHT / parts;
+        int dashYPosition = yPosition;
+        for (int i = 0; i < parts; i += 2) {
+            g2.fillRect(xPosition, dashYPosition, SimplePaddle.WIDTH, dashHeight);
+            dashYPosition += dashHeight * 2;
+        }
+    }
 
+    @Override
+    public void doCollision(Ball ball) {
     }
 }

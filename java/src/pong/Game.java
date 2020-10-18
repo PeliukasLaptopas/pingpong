@@ -42,7 +42,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
     // Players
     private Player player1; //player paddle
     private Player player2; //enemy paddle
-    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER2;
+    private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER1;
     private int currentPlayerYPosition = 0;
     // Paddles
     private PaddleFactory paddleFactory = new PaddleFactory();
@@ -243,23 +243,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
     //Check for the moment where the paddles and the ball collide
 	public void doCollision(){
-		//left paddle collision
-		for (int colY = player1.getPaddle().getYPosition(); colY <  player1.getPaddle().getYPosition() + SimplePaddle.HEIGHT; colY++){
-			if (  ball.getXPos() ==  player1.getPaddle().getXPosition() &&   ball.getYPos() + Ball.RADIUS == colY){
-				ball.reverseXVelocity();
-				ball.setYVelocity(0);
-				//System.out.println("COLLISION");
-			}
-		}
-
-		//right paddle collision
-		for (int colY = player2.getPaddle().getYPosition(); colY <  player2.getPaddle().getYPosition() + SimplePaddle.HEIGHT; colY++){
-			if (ball.getXPos() ==  player2.getPaddle().getXPosition() - SimplePaddle.WIDTH &&  ball.getYPos() + Ball.RADIUS == colY){
-				ball.reverseXVelocity();
-				//System.out.println("COLLISION");
-				ball.setYVelocity(0);
-			}
-		}
+		player1.getPaddle().doCollision(ball);
+		player2.getPaddle().doCollision(ball);
 	}
 
     /*checks whether or not either of the paddles have scored 7 points -- if they have
@@ -298,7 +283,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
                 player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
             }
             synchronized (player2Lock) {
-                player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
+                player2.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER2));
             }
         }
     }

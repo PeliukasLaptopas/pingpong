@@ -2,6 +2,7 @@ package paddles;
 
 import factory.Paddle;
 import player.SelectedPlayer;
+import pong.Ball;
 import utils.CanvasConstants;
 
 import java.awt.*;
@@ -56,5 +57,15 @@ public class SimplePaddle implements Paddle {
     @Override
     public void draw(Graphics2D g2) {
         g2.fillRect(xPosition, yPosition, SimplePaddle.WIDTH, SimplePaddle.HEIGHT);
+    }
+
+    @Override
+    public void doCollision(Ball ball) {
+        for (int colY = yPosition; colY < yPosition + SimplePaddle.HEIGHT; colY++) {
+            if (ball.getXPos() == xPosition && ball.getYPos() + Ball.RADIUS == colY) {
+                ball.reverseXVelocity();
+                ball.setYVelocity(0);
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package factory;
 
+import paddles.DashedPaddle;
 import player.SelectedPlayer;
 import paddles.SimplePaddle;
 
@@ -11,6 +12,8 @@ public class PaddleFactory {
         switch (paddleType) {
             case SIMPLE:
                 return new SimplePaddle(player, defaultSpeed);
+            case DASHED:
+                return new DashedPaddle(player, defaultSpeed, 2);
             default:
                 return null;
         }
