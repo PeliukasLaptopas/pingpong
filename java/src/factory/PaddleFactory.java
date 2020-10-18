@@ -21,13 +21,17 @@ public class PaddleFactory {
     private int defaultDashCount = 2;
 
     public Paddle createPaddle(PaddleType paddleType, SelectedPlayer player) {
+        PaddleBuilder builder = new PaddleBuilder();
+        builder.setSelectedPlayer(player);
+        builder.setSpeed(defaultSpeed);
+
         switch (paddleType) {
             case SIMPLE:
-                return new SimplePaddle(player, defaultSpeed);
+                return builder.createPaddle(PaddleType.SIMPLE, defaultDashCount, defaultAngle);
             case DASHED:
-                return new DashedPaddle(player, defaultSpeed, defaultDashCount);
+                return builder.createPaddle(PaddleType.DASHED, defaultDashCount, defaultAngle);
             case ANGLED:
-                return new AngledPaddle(player, defaultSpeed, defaultAngle);
+                return builder.createPaddle(PaddleType.ANGLED, defaultDashCount, defaultAngle);
             default:
                 return null;
         }
