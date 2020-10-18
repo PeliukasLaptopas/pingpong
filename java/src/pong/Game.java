@@ -280,10 +280,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
             rightScore = 0;
             gameOver = false;
             synchronized (player1Lock) {
-                player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
+                player1.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER1));
             }
             synchronized (player2Lock) {
-                player2.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER2));
+                player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
             }
         }
     }

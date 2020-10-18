@@ -87,7 +87,7 @@ public class DashedPaddle implements Paddle {
         int xPos = (selectedPlayer == SelectedPlayer.PLAYER1) ? xPosition : xPosition - WIDTH;
         for (Range dash : dashes) {
             for (int colY = dash.getStart(); colY < dash.getStart() + dash.getEnd(); colY++) {
-                if (ball.getXPos() == xPos && ball.getYPos() + Ball.RADIUS == colY) {
+                if (ball.getXPos() <= xPos && ball.getYPos() + Ball.RADIUS == colY) {
                     ball.reverseXVelocity();
                     ball.setYVelocity(0);
                 }

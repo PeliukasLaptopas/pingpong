@@ -2,5 +2,6 @@ package factory;
 
 public enum PaddleType {
     SIMPLE,
-    DASHED;
+    DASHED,
+    ANGLED;
 }
