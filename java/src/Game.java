@@ -5,12 +5,14 @@ import java.net.URI;
 import java.util.Random;
 import java.awt.event.KeyEvent;
 
+import abstract_factory.AbstractPaddleFactory;
+import abstract_factory.PaddleFactoryProducer;
+import abstract_factory.PaddleFactoryType;
 import api.PingPongSocketClient;
 import ball.Ball;
 import ball.BallPosition;
 import com.google.gson.Gson;
-import factory.PaddleFactory;
-import factory.PaddleType;
+import factory.paddle.PaddleType;
 import factory.ball.BallFactory;
 import factory.ball.BallType;
 import player.Player;
@@ -45,7 +47,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
     private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER1;
     private int currentPlayerYPosition = 0;
     // Paddles
-    private PaddleFactory paddleFactory = PaddleFactory.getInstance();
+    private AbstractPaddleFactory paddleFactory = PaddleFactoryProducer.getFactory(PaddleFactoryType.COLORED);
     private BallFactory ballFactory = new BallFactory();
 
     //where execution begins

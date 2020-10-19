@@ -1,8 +1,7 @@
 package builder;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 import paddles.DashedPaddle;
-import paddles.SimplePaddle;
 
 public class DashedPaddleBuilder extends PaddleBuilder {
 
@@ -15,6 +14,6 @@ public class DashedPaddleBuilder extends PaddleBuilder {
 
     @Override
     public Paddle build() {
-        return new DashedPaddle(player, speed, dashCount);
+        return new DashedPaddle(player, speed, dashCount, color);
     }
 }

@@ -1,11 +1,12 @@
-package factory;
+package factory.paddle;
 
+import abstract_factory.AbstractPaddleFactory;
 import builder.AngledPaddleBuilder;
 import builder.DashedPaddleBuilder;
 import builder.SimplePaddleBuilder;
 import player.SelectedPlayer;
 
-public class PaddleFactory {
+public class PaddleFactory extends AbstractPaddleFactory {
 
     private static PaddleFactory instance = null;
     private PaddleFactory(){}
@@ -20,6 +21,7 @@ public class PaddleFactory {
     private int defaultAngle = 45;
     private int defaultDashCount = 2;
 
+    @Override
     public Paddle createPaddle(PaddleType paddleType, SelectedPlayer player) {
         switch (paddleType) {
             case SIMPLE:

@@ -1,6 +1,6 @@
 package paddles;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 import player.SelectedPlayer;
 import ball.Ball;
 import utils.CanvasConstants;
@@ -18,9 +18,11 @@ public class AngledPaddle implements Paddle {
     private int angle;
     private int xPosition, yPosition;
     private Shape rect;
+    private Color color = Color.WHITE;
 
     //constructor
-    public AngledPaddle(SelectedPlayer player, int speed, int angle) {
+    public AngledPaddle(SelectedPlayer player, int speed, int angle, Color color) {
+        this.color = color;
         // Angle must be between 0 - 90
         this.angle = Math.min(90, Math.max(0, angle));
         this.speed = speed;
@@ -70,7 +72,10 @@ public class AngledPaddle implements Paddle {
         AffineTransform aff = new AffineTransform();
         aff.rotate(Math.toRadians(angle), xPosition, yPosition);
         this.rect = aff.createTransformedShape(rect);
+
+        g2.setColor(color);
         g2.fill(this.rect);
+        g2.setColor(Color.WHITE);
     }
 
     @Override

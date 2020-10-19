@@ -1,8 +1,7 @@
 package builder;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 import paddles.AngledPaddle;
-import paddles.SimplePaddle;
 
 public class AngledPaddleBuilder extends PaddleBuilder {
 
@@ -15,6 +14,6 @@ public class AngledPaddleBuilder extends PaddleBuilder {
 
     @Override
     public Paddle build() {
-        return new AngledPaddle(player, speed, angle);
+        return new AngledPaddle(player, speed, angle, color);
     }
 }

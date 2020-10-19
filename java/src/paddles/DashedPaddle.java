@@ -1,6 +1,6 @@
 package paddles;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 import player.SelectedPlayer;
 import ball.Ball;
 import utils.CanvasConstants;
@@ -20,9 +20,11 @@ public class DashedPaddle implements Paddle {
     private List<Range> dashes = new ArrayList<>();
     private int xPosition, yPosition;
     private SelectedPlayer selectedPlayer;
+    private Color color = Color.WHITE;
 
     //constructor
-    public DashedPaddle(SelectedPlayer player, int speed, int dashCount) {
+    public DashedPaddle(SelectedPlayer player, int speed, int dashCount, Color color) {
+        this.color = color;
         this.selectedPlayer = player;
         this.dashCount = dashCount;
         this.speed = speed;
@@ -77,9 +79,11 @@ public class DashedPaddle implements Paddle {
     @Override
     public void draw(Graphics2D g2) {
         createDashes();
+        g2.setColor(color);
         for (Range dash : dashes) {
             g2.fillRect(xPosition, dash.getStart(), WIDTH, dash.getEnd());
         }
+        g2.setColor(Color.WHITE);
     }
 
     @Override

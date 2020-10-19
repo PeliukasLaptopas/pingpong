@@ -1,6 +1,6 @@
 package player;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 
 public class Player {
     private boolean isHost;

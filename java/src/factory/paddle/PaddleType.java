@@ -1,4 +1,4 @@
-package factory;
+package factory.paddle;
 
 public enum PaddleType {
     SIMPLE,

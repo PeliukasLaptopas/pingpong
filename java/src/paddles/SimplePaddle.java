@@ -1,6 +1,6 @@
 package paddles;
 
-import factory.Paddle;
+import factory.paddle.Paddle;
 import player.SelectedPlayer;
 import ball.Ball;
 import utils.CanvasConstants;
@@ -16,9 +16,11 @@ public class SimplePaddle implements Paddle {
     private int speed;
     private int xPosition, yPosition;
     private Shape rect;
+    private Color color = Color.WHITE;
 
     //constructor
-    public SimplePaddle(SelectedPlayer player, int speed) {
+    public SimplePaddle(SelectedPlayer player, int speed, Color color) {
+        this.color = color;
         this.speed = speed;
         int xPos;
         int yPos = CanvasConstants.WINDOW_HEIGHT / 2;
@@ -59,7 +61,9 @@ public class SimplePaddle implements Paddle {
     @Override
     public void draw(Graphics2D g2) {
         rect = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
+        g2.setColor(color);
         g2.fill(rect);
+        g2.setColor(Color.WHITE);
     }
 
     @Override
