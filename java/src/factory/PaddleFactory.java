@@ -1,9 +1,9 @@
 package factory;
 
-import paddles.AngledPaddle;
-import paddles.DashedPaddle;
+import builder.AngledPaddleBuilder;
+import builder.DashedPaddleBuilder;
+import builder.SimplePaddleBuilder;
 import player.SelectedPlayer;
-import paddles.SimplePaddle;
 
 public class PaddleFactory {
 
@@ -21,19 +21,38 @@ public class PaddleFactory {
     private int defaultDashCount = 2;
 
     public Paddle createPaddle(PaddleType paddleType, SelectedPlayer player) {
-        PaddleBuilder builder = new PaddleBuilder();
-        builder.setSelectedPlayer(player);
-        builder.setSpeed(defaultSpeed);
-
         switch (paddleType) {
             case SIMPLE:
-                return builder.createPaddle(PaddleType.SIMPLE, defaultDashCount, defaultAngle);
+                return createSimplePaddle(player);
             case DASHED:
-                return builder.createPaddle(PaddleType.DASHED, defaultDashCount, defaultAngle);
+                return createAngledPaddle(player);
             case ANGLED:
-                return builder.createPaddle(PaddleType.ANGLED, defaultDashCount, defaultAngle);
+                return createDashedPaddle(player);
             default:
                 return null;
         }
+    }
+
+    private Paddle createSimplePaddle(SelectedPlayer player) {
+        return new SimplePaddleBuilder()
+                .setSelectedPlayer(player)
+                .setSpeed(defaultSpeed)
+                .build();
+    }
+
+    private Paddle createAngledPaddle(SelectedPlayer player) {
+        return new AngledPaddleBuilder()
+                .setAngle(defaultAngle)
+                .setSelectedPlayer(player)
+                .setSpeed(defaultSpeed)
+                .build();
+    }
+
+    private Paddle createDashedPaddle(SelectedPlayer player) {
+        return new DashedPaddleBuilder()
+                .setDashCount(defaultDashCount)
+                .setSelectedPlayer(player)
+                .setSpeed(defaultSpeed)
+                .build();
     }
 }

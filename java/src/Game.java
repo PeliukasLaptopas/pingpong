@@ -184,7 +184,9 @@ public class Game extends JFrame implements Runnable, KeyListener {
                     doCollision(); //checks for collisions between paddles and ball
                     wallBounce = checkWallBounce(); //for playing the wall sounds*/
                     // Send ball position
-                    client.send(ball.getPosition().toJson());
+                    if(client != null && client.getConnection().isOpen()) {
+                        client.send(ball.getPosition().toJson());
+                    }
                 }
 				/*
 //				gameOver();*/
