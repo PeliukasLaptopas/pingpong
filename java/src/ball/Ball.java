@@ -2,13 +2,12 @@ package ball;
 
 import utils.CanvasConstants;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Ball {
-    public static final int RADIUS = 10; //size of the Ball
+public abstract class Ball {
 
-    private int directionVector = 2;
     private int xVelocity, yVelocity;
     private BallPosition position;
     //Collision handling
@@ -16,26 +15,20 @@ public class Ball {
     private boolean isCollisionEnabled = true;
     private boolean destroyable = false; //is this field necessary?
 
-    public Ball(int xPos, int yPos, double angle) {
-        //in case a crazy person tries to create a Ball with values outside of the Game screen
-        if ((yPos >= (CanvasConstants.WINDOW_HEIGHT - (6 * RADIUS)))
-                || (yPos <= 0)
-                || (xPos == (CanvasConstants.WINDOW_WIDTH - (4 * RADIUS)))
-                || (xPos == 0)) {
-            //then set ball x and y to be middle of the screen
-            int x = CanvasConstants.WINDOW_WIDTH / 2;
-            int y = CanvasConstants.WINDOW_HEIGHT / 2;
-            position = new BallPosition(x, y);
-        } else {
-            position = new BallPosition(xPos, yPos);
-        }
+    public abstract int getSize();
+    public abstract int getSpeed();
+
+    public Ball() {
+        Random rand = new Random();
+        int angle = rand.nextInt(180);
+        position = new BallPosition(CanvasConstants.WINDOW_WIDTH / 2 - getSize(), CanvasConstants.WINDOW_HEIGHT / 2 - getSize());
 
         //init the velocity in both directions
-        xVelocity = (int) (Math.cos(angle) * (double) directionVector);
+        xVelocity = (int) (Math.cos(angle) * (double) getSpeed());
         if (xVelocity == 0) {
-            xVelocity = 1;
+            xVelocity = getSpeed();
         }
-        yVelocity = (int) (Math.sin(angle) * (double) directionVector);
+        yVelocity = (int) (Math.sin(angle) * (double) getSpeed());
         destroyable = false;
         System.out.println(angle);
     }
@@ -66,7 +59,7 @@ public class Ball {
         position.setY(position.getY() + yVelocity);
         //System.out.println(angle);
         //right bound checking
-        if (position.getX() > CanvasConstants.WINDOW_WIDTH - (4 * RADIUS)) {
+        if (position.getX() > CanvasConstants.WINDOW_WIDTH_ACTUAL - getSize()) {
             reverseXVelocity();
             destroyable = true;
         }
@@ -76,7 +69,7 @@ public class Ball {
             destroyable = true;
         }
         //down bound checking
-        if (position.getY() > CanvasConstants.WINDOW_HEIGHT - (6 * RADIUS)) {
+        if (position.getY() > CanvasConstants.WINDOW_HEIGHT_ACTUAL - getSize()) {
             reverseYVelocity();
 
         }

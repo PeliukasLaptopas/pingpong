@@ -11,6 +11,8 @@ import ball.BallPosition;
 import com.google.gson.Gson;
 import factory.PaddleFactory;
 import factory.PaddleType;
+import factory.ball.BallFactory;
+import factory.ball.BallType;
 import player.Player;
 import player.SelectedPlayer;
 import utils.CanvasConstants;
@@ -44,6 +46,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
     private int currentPlayerYPosition = 0;
     // Paddles
     private PaddleFactory paddleFactory = PaddleFactory.getInstance();
+    private BallFactory ballFactory = new BallFactory();
 
     //where execution begins
     public static void main(String[] args) {
@@ -58,6 +61,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
         createPlayers();
         //start the game
         startGameThread();
+    }
+
+    private void createBall() {
+        ball = ballFactory.createBall(BallType.SMALL);
     }
 
     private void createPlayers() {
@@ -160,7 +167,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
     public void run() {
 		synchronized (ballLock) { // We will create the ball - make sure it doesn't get painted at the same time
-			ball = new Ball(CanvasConstants.WINDOW_WIDTH / 2 - Ball.RADIUS, CanvasConstants.WINDOW_HEIGHT / 2 - Ball.RADIUS, 0);
+			createBall();
 		}
         /*Game loop should always be running*/
         boolean wallBounce = false;
@@ -180,9 +187,9 @@ public class Game extends JFrame implements Runnable, KeyListener {
                 updateSelectedPlayerPosition();
                 if(getSelectedPlayer().isHost()) {
                     ball.updateBall();
+                    wallBounce = checkWallBounce(); //for playing the wall sounds*/
                     destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)
                     doCollision(); //checks for collisions between paddles and ball
-                    wallBounce = checkWallBounce(); //for playing the wall sounds*/
                     // Send ball position
                     if(client != null && client.getConnection().isOpen()) {
                         client.send(ball.getPosition().toJson());
@@ -206,31 +213,25 @@ public class Game extends JFrame implements Runnable, KeyListener {
             synchronized (ballLock) {
                 ball = null;
             }//make sure does not get painted at same time
-            /*creates the ball in the middle of the screen*/
-            int ball_rand = random.nextInt(120);
-            /*a ball_rand of 0 will create a ball that bounces vertically, forever */
-            while (ball_rand == 0) {
-                ball_rand = random.nextInt(120);
-            }
-            //System.out.println("ball seed " + ball_rand);
             //don't put the ball in the middle, it's impossible to react to in time.  Put it closer to the edge of the screen.
             synchronized (ballLock) {
-                ball = new Ball((int) (CanvasConstants.WINDOW_WIDTH * 0.85), ball_rand + 120, (ball_rand + 120) * (Math.PI / 180));
+                /*ball = new Ball((int) (CanvasConstants.WINDOW_WIDTH * 0.85), ball_rand + 120, (ball_rand + 120) * (Math.PI / 180));*/
+                createBall();
             }
         }
     }
 
     //for playing the wall sounds, else-if because don't want any sounds to play or wall collision behavior to happen simultaneously
     public boolean checkWallBounce() {
-        if ((ball.getYPos() >= (CanvasConstants.WINDOW_HEIGHT - (6 * Ball.RADIUS))) || (ball.getYPos() <= 0)) {
+        if ((ball.getYPos() >= (CanvasConstants.WINDOW_HEIGHT_ACTUAL)) || (ball.getYPos() <= 0)) {
             //System.out.println("Top or bottom \'wall\' was hit");
-        } else if (ball.getXPos() == (CanvasConstants.WINDOW_WIDTH - (4 * Ball.RADIUS))) {
+        } else if (ball.getXPos() >= (CanvasConstants.WINDOW_WIDTH_ACTUAL - ball.getSize())) {
             if (gameOver) {
             } else {
                 leftScore++;
                 return true;
             }
-        } else if (ball.getXPos() == 0) {
+        } else if (ball.getXPos() <= 0) {
             if (gameOver) {
             } else {
                 rightScore++;
@@ -280,7 +281,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
             rightScore = 0;
             gameOver = false;
             synchronized (player1Lock) {
-                player1.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER1));
+                player1.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER1));
             }
             synchronized (player2Lock) {
                 player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
@@ -323,7 +324,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
             synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
                 if (ball != null) {
-                    g2.fillOval(ball.getXPos(), ball.getYPos(), Ball.RADIUS * 2, Ball.RADIUS * 2);
+                    g2.fillOval(ball.getXPos(), ball.getYPos(), ball.getSize() * 2, ball.getSize() * 2);
                 }
             }
 

@@ -75,7 +75,7 @@ public class AngledPaddle implements Paddle {
 
     @Override
     public void doCollision(Ball ball) {
-        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), Ball.RADIUS, Ball.RADIUS)) {
+        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), ball.getSize(), ball.getSize())) {
             ball.onCollision();
         }
     }

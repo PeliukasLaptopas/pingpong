@@ -25,9 +25,9 @@ public class PaddleFactory {
             case SIMPLE:
                 return createSimplePaddle(player);
             case DASHED:
-                return createAngledPaddle(player);
-            case ANGLED:
                 return createDashedPaddle(player);
+            case ANGLED:
+                return createAngledPaddle(player);
             default:
                 return null;
         }
