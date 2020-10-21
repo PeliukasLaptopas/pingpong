@@ -2,6 +2,8 @@ package ball;
 
 import utils.CanvasConstants;
 
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,6 +16,7 @@ public abstract class Ball {
     private Timer lastCollisionTimer = new Timer();
     private boolean isCollisionEnabled = true;
     private boolean destroyable = false; //is this field necessary?
+    public Shape ballShape;
 
     public abstract int getSize();
     public abstract int getSpeed();
@@ -49,8 +52,12 @@ public abstract class Ball {
             lastCollisionTimer = new Timer();
             lastCollisionTimer.schedule(createCollisionTimerTask(), 1000);
             reverseXVelocity();
-            setYVelocity(0);
         }
+    }
+
+    public void draw(Graphics2D g2) {
+        ballShape = new Ellipse2D.Double(getXPos(), getYPos(), getSize() * 2, getSize() * 2);
+        g2.fill(ballShape);
     }
 
     //update position

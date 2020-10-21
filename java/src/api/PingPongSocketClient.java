@@ -1,18 +1,21 @@
 package api;
 
+import observer.Subject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.util.function.Consumer;
 
 public class PingPongSocketClient extends WebSocketClient {
 
-    private Consumer<String> onMessageReceived;
+    private Subject<String> subject = new Subject<>();
 
-    public PingPongSocketClient(URI serverUri, Consumer<String> onMessageReceived) {
+    public Subject<String> getSubject() {
+        return subject;
+    }
+
+    public PingPongSocketClient(URI serverUri) {
         super(serverUri);
-        this.onMessageReceived = onMessageReceived;
     }
 
     @Override
@@ -23,7 +26,7 @@ public class PingPongSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String s) {
         System.out.println("Response: " + s);
-        onMessageReceived.accept(s);
+        subject.setState(s);
     }
 
     @Override

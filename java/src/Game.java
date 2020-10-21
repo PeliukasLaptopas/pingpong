@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import factory.paddle.PaddleType;
 import factory.ball.BallFactory;
 import factory.ball.BallType;
+import observer.StringObserver;
 import player.Player;
 import player.SelectedPlayer;
 import utils.CanvasConstants;
@@ -26,6 +27,7 @@ import utils.CanvasConstants;
  */
 public class Game extends JFrame implements Runnable, KeyListener {
 
+    private final String URL = "ws://localhost:8081";
     // Scores
     protected int leftScore = 0;
     protected int rightScore = 0;
@@ -65,8 +67,18 @@ public class Game extends JFrame implements Runnable, KeyListener {
         startGameThread();
     }
 
+    private void createConnection() {
+        client = new PingPongSocketClient(URI.create(URL));
+        client.connect();
+        setUpObservers();
+    }
+
+    private void setUpObservers() {
+        new StringObserver(client.getSubject(), (this::onClientResponse));
+    }
+
     private void createBall() {
-        ball = ballFactory.createBall(BallType.SMALL);
+        ball = ballFactory.createBall(BallType.MEDIUM);
     }
 
     private void createPlayers() {
@@ -81,14 +93,14 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private Player getSelectedPlayer() {
-        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+        if (selectedPlayer == SelectedPlayer.PLAYER1) {
             return player1;
         }
         return player2;
     }
 
     private Player getEnemyPlayer() {
-        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+        if (selectedPlayer == SelectedPlayer.PLAYER1) {
             return player2;
         }
         return player1;
@@ -134,21 +146,15 @@ public class Game extends JFrame implements Runnable, KeyListener {
         gameThread.start();
     }
 
-    private void createConnection() {
-        String URL = "ws://localhost:8081";
-        client = new PingPongSocketClient(URI.create(URL), this::onServerMessageReceived);
-        client.connect();
-    }
-
-    private void onServerMessageReceived(String message) {
+    private void onClientResponse(String message) {
         try {
             BallPosition ballPosition = gson.fromJson(message, BallPosition.class);
             ball.setBallPosition(ballPosition);
             return;
         } catch (Exception e) {
-            //
+
         }
-        updateEnemyPlayerPosition(message);
+        getEnemyPlayer().getPaddle().setYPosition(Integer.parseInt(message));
     }
 
     private void updateSelectedPlayerPosition() {
@@ -163,37 +169,32 @@ public class Game extends JFrame implements Runnable, KeyListener {
         }
     }
 
-    private void updateEnemyPlayerPosition(String message) {
-        getEnemyPlayer().getPaddle().setYPosition(Integer.parseInt(message));
-    }
-
     public void run() {
-		synchronized (ballLock) { // We will create the ball - make sure it doesn't get painted at the same time
-			createBall();
-		}
+        synchronized (ballLock) { // We will create the ball - make sure it doesn't get painted at the same time
+            createBall();
+        }
         /*Game loop should always be running*/
         boolean wallBounce = false;
         while (true) {
-			try{
-				int delayMs = 5;
-				if (wallBounce)
-				{
-					delayMs = 200;//delay when a score happens so you can see where it's going to go
-				}
-		        Thread.sleep(delayMs);//tells the game how often to refresh
-			}catch (Exception ex){
-				System.out.println("Couldn't sleep for some reason.");
-				ex.printStackTrace();
-			}
+            try {
+                int delayMs = 5;
+                if (wallBounce) {
+                    delayMs = 200;//delay when a score happens so you can see where it's going to go
+                }
+                Thread.sleep(delayMs);//tells the game how often to refresh
+            } catch (Exception ex) {
+                System.out.println("Couldn't sleep for some reason.");
+                ex.printStackTrace();
+            }
             if (true) {
                 updateSelectedPlayerPosition();
-                if(getSelectedPlayer().isHost()) {
+                if (getSelectedPlayer().isHost()) {
                     ball.updateBall();
                     wallBounce = checkWallBounce(); //for playing the wall sounds*/
                     destroyBall(); //point ball to null if it goes behind paddle (and creates a new one)
                     doCollision(); //checks for collisions between paddles and ball
                     // Send ball position
-                    if(client != null && client.getConnection().isOpen()) {
+                    if (client != null && client.getConnection().isOpen()) {
                         client.send(ball.getPosition().toJson());
                     }
                 }
@@ -245,10 +246,10 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     //Check for the moment where the paddles and the ball collide
-	public void doCollision(){
-		player1.getPaddle().doCollision(ball);
-		player2.getPaddle().doCollision(ball);
-	}
+    public void doCollision() {
+        player1.getPaddle().doCollision(ball);
+        player2.getPaddle().doCollision(ball);
+    }
 
     /*checks whether or not either of the paddles have scored 7 points -- if they have
     /then destroy the paddles and restart the game.*/
@@ -265,7 +266,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent keyEvent) { }
+    public void keyTyped(KeyEvent keyEvent) {
+    }
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
@@ -292,7 +294,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     @Override
-    public void keyReleased(KeyEvent keyEvent) { }
+    public void keyReleased(KeyEvent keyEvent) {
+    }
 
     //Nested class
     private class Canvas extends JPanel {
@@ -326,7 +329,7 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
             synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
                 if (ball != null) {
-                    g2.fillOval(ball.getXPos(), ball.getYPos(), ball.getSize() * 2, ball.getSize() * 2);
+                    ball.draw(g2);
                 }
             }
 

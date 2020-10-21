@@ -20,7 +20,7 @@ public class DashedPaddle implements Paddle {
     private List<Range> dashes = new ArrayList<>();
     private int xPosition, yPosition;
     private SelectedPlayer selectedPlayer;
-    private Color color = Color.WHITE;
+    private Color color;
 
     //constructor
     public DashedPaddle(SelectedPlayer player, int speed, int dashCount, Color color) {

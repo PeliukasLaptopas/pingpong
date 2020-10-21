@@ -17,8 +17,8 @@ public class AngledPaddle implements Paddle {
     private int speed;
     private int angle;
     private int xPosition, yPosition;
-    private Shape rect;
-    private Color color = Color.WHITE;
+    private Shape paddleShape;
+    private Color color;
 
     //constructor
     public AngledPaddle(SelectedPlayer player, int speed, int angle, Color color) {
@@ -71,16 +71,16 @@ public class AngledPaddle implements Paddle {
         Rectangle2D rect = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
         AffineTransform aff = new AffineTransform();
         aff.rotate(Math.toRadians(angle), xPosition, yPosition);
-        this.rect = aff.createTransformedShape(rect);
+        this.paddleShape = aff.createTransformedShape(rect);
 
         g2.setColor(color);
-        g2.fill(this.rect);
+        g2.fill(this.paddleShape);
         g2.setColor(Color.WHITE);
     }
 
     @Override
     public void doCollision(Ball ball) {
-        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), ball.getSize(), ball.getSize())) {
+        if(paddleShape != null && ball.ballShape != null && paddleShape.intersects(ball.ballShape.getBounds2D())) {
             ball.onCollision();
         }
     }

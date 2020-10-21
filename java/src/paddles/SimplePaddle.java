@@ -15,8 +15,8 @@ public class SimplePaddle implements Paddle {
 
     private int speed;
     private int xPosition, yPosition;
-    private Shape rect;
-    private Color color = Color.WHITE;
+    private Shape paddleShape;
+    private Color color;
 
     //constructor
     public SimplePaddle(SelectedPlayer player, int speed, Color color) {
@@ -60,15 +60,15 @@ public class SimplePaddle implements Paddle {
 
     @Override
     public void draw(Graphics2D g2) {
-        rect = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
+        paddleShape = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
         g2.setColor(color);
-        g2.fill(rect);
+        g2.fill(paddleShape);
         g2.setColor(Color.WHITE);
     }
 
     @Override
     public void doCollision(Ball ball) {
-        if(rect != null && rect.intersects(ball.getXPos(), ball.getYPos(), ball.getSize(), ball.getSize())) {
+        if(paddleShape != null && ball.ballShape != null && paddleShape.intersects(ball.ballShape.getBounds2D())) {
             ball.onCollision();
         }
     }
