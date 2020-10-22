@@ -1,31 +1,32 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyListener;
-import java.net.URI;
-import java.util.Random;
-import java.awt.event.KeyEvent;
-
-import abstract_factory.AbstractPaddleFactory;
-import abstract_factory.PaddleFactoryProducer;
-import abstract_factory.PaddleFactoryType;
 import api.PingPongSocketClient;
 import ball.Ball;
 import ball.BallPosition;
+import ball.factory.BallFactory;
+import ball.factory.BallType;
 import com.google.gson.Gson;
-import factory.paddle.PaddleType;
-import factory.ball.BallFactory;
-import factory.ball.BallType;
+import input.InputHandler;
+import input.InputKey;
+import observer.InputKeyObserver;
 import observer.StringObserver;
+import paddles.abstractfactory.AbstractPaddleFactory;
+import paddles.abstractfactory.PaddleFactoryProducer;
+import paddles.abstractfactory.PaddleFactoryType;
+import paddles.factory.PaddleType;
 import player.Player;
 import player.SelectedPlayer;
 import utils.CanvasConstants;
+
+import javax.swing.*;
+import java.awt.*;
+import java.net.URI;
+import java.util.Random;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
  * Included in java.lang This class contains all of the game logic and an inner class
  * for drawing the game.
  */
-public class Game extends JFrame implements Runnable, KeyListener {
+public class Game extends JFrame implements Runnable {
 
     private final String URL = "ws://localhost:8081";
     // Scores
@@ -51,6 +52,8 @@ public class Game extends JFrame implements Runnable, KeyListener {
     // Paddles
     private AbstractPaddleFactory paddleFactory = PaddleFactoryProducer.getFactory(PaddleFactoryType.COLORED);
     private BallFactory ballFactory = new BallFactory();
+    // Input
+    private InputHandler inputHandler = new InputHandler();
 
     //where execution begins
     public static void main(String[] args) {
@@ -59,9 +62,9 @@ public class Game extends JFrame implements Runnable, KeyListener {
 
     //constructor for starting the game
     public Game() {
-        addKeyListener(this);
         createConnection();
         initCanvas();
+        addKeyListener(inputHandler);
         createPlayers();
         //start the game
         startGameThread();
@@ -74,11 +77,12 @@ public class Game extends JFrame implements Runnable, KeyListener {
     }
 
     private void setUpObservers() {
-        new StringObserver(client.getSubject(), (this::onClientResponse));
+        new StringObserver(client.getSubject(), this::onClientResponse);
+        new InputKeyObserver(inputHandler.getSubject(), this::onKeyPressed);
     }
 
     private void createBall() {
-        ball = ballFactory.createBall(BallType.MEDIUM);
+        ball = ballFactory.createBall(BallType.SMALL);
     }
 
     private void createPlayers() {
@@ -265,36 +269,28 @@ public class Game extends JFrame implements Runnable, KeyListener {
         }
     }
 
-    @Override
-    public void keyTyped(KeyEvent keyEvent) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent keyEvent) {
-        int keycode = keyEvent.getKeyCode();
-        if (keycode == KeyEvent.VK_UP) {
+    private void onKeyPressed(InputKey inputKey) {
+        if(inputKey == InputKey.UP) {
             getSelectedPlayer().getPaddle().moveUp();
             repaint();
         }
-        if (keycode == KeyEvent.VK_DOWN) {
+        if(inputKey == InputKey.DOWN) {
             getSelectedPlayer().getPaddle().moveDown();
             repaint();
         }
-        if (gameOver && keycode == KeyEvent.VK_ENTER) {
-            leftScore = 0;
-            rightScore = 0;
-            gameOver = false;
-            synchronized (player1Lock) {
-                player1.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER1));
-            }
-            synchronized (player2Lock) {
-                player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
+        if(inputKey == InputKey.ENTER) {
+            if (gameOver) {
+                leftScore = 0;
+                rightScore = 0;
+                gameOver = false;
+                synchronized (player1Lock) {
+                    player1.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER1));
+                }
+                synchronized (player2Lock) {
+                    player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
+                }
             }
         }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent keyEvent) {
     }
 
     //Nested class

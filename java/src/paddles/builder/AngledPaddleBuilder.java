@@ -1,6 +1,6 @@
-package builder;
+package paddles.builder;
 
-import factory.paddle.Paddle;
+import paddles.Paddle;
 import paddles.AngledPaddle;
 
 public class AngledPaddleBuilder extends PaddleBuilder {

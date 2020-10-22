@@ -1,4 +1,4 @@
-package factory.ball;
+package ball.factory;
 
 public enum BallType {
     SMALL,

@@ -1,9 +1,10 @@
-package factory.paddle;
+package paddles.factory;
 
-import abstract_factory.AbstractPaddleFactory;
-import builder.AngledPaddleBuilder;
-import builder.DashedPaddleBuilder;
-import builder.SimplePaddleBuilder;
+import paddles.abstractfactory.AbstractPaddleFactory;
+import paddles.builder.AngledPaddleBuilder;
+import paddles.builder.DashedPaddleBuilder;
+import paddles.builder.SimplePaddleBuilder;
+import paddles.Paddle;
 import player.SelectedPlayer;
 
 public class PaddleFactory extends AbstractPaddleFactory {

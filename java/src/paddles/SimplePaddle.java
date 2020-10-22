@@ -1,6 +1,5 @@
 package paddles;
 
-import factory.paddle.Paddle;
 import player.SelectedPlayer;
 import ball.Ball;
 import utils.CanvasConstants;

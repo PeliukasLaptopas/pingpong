@@ -1,7 +1,7 @@
-package abstract_factory;
+package paddles.abstractfactory;
 
-import factory.paddle.ColoredPaddleFactory;
-import factory.paddle.PaddleFactory;
+import paddles.factory.ColoredPaddleFactory;
+import paddles.factory.PaddleFactory;
 
 public class PaddleFactoryProducer {
     public static AbstractPaddleFactory getFactory(PaddleFactoryType factoryType) {

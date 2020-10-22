@@ -1,4 +1,4 @@
-package abstract_factory;
+package paddles.abstractfactory;
 
 public enum PaddleFactoryType {
     NORMAL,
