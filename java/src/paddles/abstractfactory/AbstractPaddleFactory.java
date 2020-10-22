@@ -1,7 +1,7 @@
-package abstract_factory;
+package paddles.abstractfactory;
 
-import factory.paddle.Paddle;
-import factory.paddle.PaddleType;
+import paddles.Paddle;
+import paddles.factory.PaddleType;
 import player.SelectedPlayer;
 
 public abstract class AbstractPaddleFactory {
