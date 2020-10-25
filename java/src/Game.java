@@ -90,10 +90,10 @@ public class Game extends JFrame implements Runnable {
                 true,
                 paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1)
         );
-        player2 = new Player(
-                false,
-                paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2)
-        );
+
+        player2 = player1.makeCopy();
+        player2.setHost(false);
+        player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
     }
 
     private Player getSelectedPlayer() {

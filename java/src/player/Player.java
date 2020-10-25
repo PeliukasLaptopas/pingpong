@@ -2,7 +2,7 @@ package player;
 
 import paddles.Paddle;
 
-public class Player {
+public class Player implements Cloneable {
     private boolean isHost;
     private Paddle paddle;
 
@@ -25,5 +25,14 @@ public class Player {
 
     public void setHost(boolean host) {
         isHost = host;
+    }
+
+    public Player makeCopy() {
+        try {
+            return (Player) this.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return this;
+        }
     }
 }
