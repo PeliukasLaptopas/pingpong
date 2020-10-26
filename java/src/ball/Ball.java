@@ -1,5 +1,6 @@
 package ball;
 
+import sound.GameSound;
 import utils.CanvasConstants;
 
 import java.awt.*;
@@ -8,7 +9,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public abstract class Ball {
+public abstract class Ball implements GameSound {
 
     private int xVelocity, yVelocity;
     private BallPosition position;
@@ -34,6 +35,11 @@ public abstract class Ball {
         yVelocity = (int) (Math.sin(angle) * (double) getSpeed());
         destroyable = false;
         System.out.println(angle);
+    }
+
+    @Override
+    public void makeSound() {
+        System.out.println("Created a ball");
     }
 
     private TimerTask createCollisionTimerTask() {

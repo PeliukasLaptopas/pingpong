@@ -20,4 +20,9 @@ public class MediumBallDecorator extends BallDecorator {
     public int getSpeed() {
         return MEDIUM_SPEED;
     }
+
+    @Override
+    public void makeSound() {
+        System.out.println("Created medium ball");
+    }
 }

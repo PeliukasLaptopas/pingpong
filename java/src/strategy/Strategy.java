@@ -1,5 +1,5 @@
 package strategy;
 
 public interface Strategy {
-//    public double calculateBallAngle()
+    public int doOperation(int num1, int num2);
 }

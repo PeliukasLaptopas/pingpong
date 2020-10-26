@@ -20,4 +20,9 @@ public class LargeBallDecorator extends BallDecorator {
     public int getSpeed() {
         return LARGE_SPEED;
     }
+
+    @Override
+    public void makeSound() {
+        System.out.println("Created large ball");
+    }
 }
