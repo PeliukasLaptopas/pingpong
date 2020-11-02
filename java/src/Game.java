@@ -4,6 +4,7 @@ import ball.BallPosition;
 import ball.factory.BallFactory;
 import ball.factory.BallType;
 import com.google.gson.Gson;
+import command.Action;
 import input.InputHandler;
 import input.InputKey;
 import observer.InputKeyObserver;
@@ -14,12 +15,18 @@ import paddles.abstractfactory.PaddleFactoryType;
 import paddles.factory.PaddleType;
 import player.Player;
 import player.SelectedPlayer;
+import strategy.Context;
+import strategy.OperationAdd;
 import utils.CanvasConstants;
+import command.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Random;
+
+import java.util.List;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -32,6 +39,11 @@ public class Game extends JFrame implements Runnable {
     // Scores
     protected int leftScore = 0;
     protected int rightScore = 0;
+
+    CommandManager manager = CommandManager.getInstance();
+    List<Action> actionList = new ArrayList<>();
+    Context context = new Context(new OperationAdd());
+
     //instance variables
     private Ball ball;
     private Random random = new Random(); //for generating random integers
@@ -83,6 +95,12 @@ public class Game extends JFrame implements Runnable {
 
     private void createBall() {
         ball = ballFactory.createBall(BallType.SMALL);
+
+        //ewww this shouldnt be like this but whatever
+        actionList.add(new PaddleCollisionActionLeft(player1.getPaddle(), ball, "Left"));
+        actionList.add(new PaddleCollisionActionRight(player2.getPaddle(), ball, "Right"));
+
+        System.out.println(actionList.size());
     }
 
     private void createPlayers() {
@@ -235,13 +253,13 @@ public class Game extends JFrame implements Runnable {
         } else if (ball.getXPos() >= (CanvasConstants.WINDOW_WIDTH_ACTUAL - ball.getSize())) {
             if (gameOver) {
             } else {
-                leftScore++;
+                leftScore = context.executeStrategy(leftScore, 1);
                 return true;
             }
         } else if (ball.getXPos() <= 0) {
             if (gameOver) {
             } else {
-                rightScore++;
+                rightScore = context.executeStrategy(rightScore, 1);
                 return true;
             }
         }
@@ -251,8 +269,10 @@ public class Game extends JFrame implements Runnable {
 
     //Check for the moment where the paddles and the ball collide
     public void doCollision() {
-        player1.getPaddle().doCollision(ball);
-        player2.getPaddle().doCollision(ball);
+        manager.execute(actionList);
+
+//        player1.getPaddle().doCollision(ball);
+//        player2.getPaddle().doCollision(ball);
     }
 
     /*checks whether or not either of the paddles have scored 7 points -- if they have

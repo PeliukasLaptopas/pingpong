@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-class CommandManager {
+public class CommandManager {
     private static CommandManager instance = null;
     private QueueStack<List<Action>> queueStackNormal;
     private QueueStack<List<Action>> queueStackReverse;
 
     private List<String> actionHistory;
 
-    static CommandManager getInstance(){
+    public static CommandManager getInstance(){
         if(instance != null)
             return instance;
         return new CommandManager();
@@ -23,7 +23,7 @@ class CommandManager {
         actionHistory = new ArrayList<>();
     }
 
-    void execute(List<Action> actionList){
+    public void execute(List<Action> actionList){
         actionList.forEach(Action::execute);
         queueStackNormal.push(actionList);
         actionList.forEach(a -> actionHistory.add(a.getName()));

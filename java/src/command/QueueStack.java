@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-class QueueStack<T> {
+public class QueueStack<T> {
 
     private List<T> dataCollection;
 
