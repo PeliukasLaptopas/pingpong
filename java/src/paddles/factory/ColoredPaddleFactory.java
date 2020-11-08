@@ -1,5 +1,8 @@
 package paddles.factory;
 
+import bridge.Blue;
+import bridge.Red;
+import bridge.White;
 import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.builder.AngledPaddleBuilder;
 import paddles.builder.DashedPaddleBuilder;
@@ -7,7 +10,9 @@ import paddles.builder.SimplePaddleBuilder;
 import paddles.Paddle;
 import player.SelectedPlayer;
 
-import java.awt.*;
+import bridge.ColorBridge;
+
+import java.util.Random;
 
 public class ColoredPaddleFactory extends AbstractPaddleFactory {
 
@@ -29,7 +34,7 @@ public class ColoredPaddleFactory extends AbstractPaddleFactory {
 
     @Override
     public Paddle createPaddle(PaddleType paddleType, SelectedPlayer player) {
-        Color color = getRandomColor();
+        ColorBridge color = getRandomColor();
         switch (paddleType) {
             case SIMPLE:
                 return createSimplePaddle(player, color);
@@ -42,11 +47,18 @@ public class ColoredPaddleFactory extends AbstractPaddleFactory {
         }
     }
 
-    private Color getRandomColor() {
-        return new Color((int)(Math.random() * 0x1000000));
+    private ColorBridge getRandomColor() {
+        ColorBridge[] colors = {
+                new White(),
+                new Blue(),
+                new Red()
+        };
+        Random r = new Random();
+
+        return colors[r.nextInt(colors.length)];
     }
 
-    private Paddle createSimplePaddle(SelectedPlayer player, Color color) {
+    private Paddle createSimplePaddle(SelectedPlayer player, ColorBridge color) {
         return new SimplePaddleBuilder()
                 .setColor(color)
                 .setSelectedPlayer(player)
@@ -54,7 +66,7 @@ public class ColoredPaddleFactory extends AbstractPaddleFactory {
                 .build();
     }
 
-    private Paddle createAngledPaddle(SelectedPlayer player, Color color) {
+    private Paddle createAngledPaddle(SelectedPlayer player, ColorBridge color) {
         return new AngledPaddleBuilder()
                 .setAngle(defaultAngle)
                 .setColor(color)
@@ -63,7 +75,7 @@ public class ColoredPaddleFactory extends AbstractPaddleFactory {
                 .build();
     }
 
-    private Paddle createDashedPaddle(SelectedPlayer player, Color color) {
+    private Paddle createDashedPaddle(SelectedPlayer player, ColorBridge color) {
         return new DashedPaddleBuilder()
                 .setDashCount(defaultDashCount)
                 .setColor(color)

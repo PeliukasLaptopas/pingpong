@@ -316,46 +316,54 @@ public class Game extends JFrame implements Runnable {
     //Nested class
     private class Canvas extends JPanel {
 
+        private class CanvasFacade {
+            public void setupCanvas(Graphics g) {
+                //weird swing graphics housekeeping
+                Graphics2D g2 = (Graphics2D) g;
+
+                //drawing the 'sprites' for the game
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, CanvasConstants.WINDOW_HEIGHT, CanvasConstants.WINDOW_WIDTH); // fill the whole screen black
+                g2.setColor(Color.WHITE);
+
+                //only draw the paddles when there is still a game in progress, and don't attempt to draw paddles when they are null
+                if (!gameOver) {
+                    synchronized (player1Lock) { //wait until aquired lock from new game thread which has power to create and destroy the ball
+                        if (player1 != null) {
+                            player1.getPaddle().draw(g2);
+                        }
+                    }
+                    synchronized (player2Lock) {
+                        if (player2 != null) {
+                            player2.getPaddle().draw(g2);
+                        }
+                    }
+                } else {
+                    g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+                    g2.drawString("Press the 'enter' key to start a new game.", 55, CanvasConstants.WINDOW_HEIGHT - 100);
+                }
+
+                synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
+                    if (ball != null) {
+                        ball.draw(g2);
+                    }
+                }
+
+                for (int i = 0; i < CanvasConstants.WINDOW_WIDTH; i += 10) { //dotted line
+                    g2.drawLine(CanvasConstants.WINDOW_WIDTH / 2, i, CanvasConstants.WINDOW_WIDTH / 2, i + 5);
+                }
+
+                g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 72));
+                g2.drawString("" + leftScore, CanvasConstants.WINDOW_WIDTH / 2 - 150, 100);
+                g2.drawString("" + rightScore, CanvasConstants.WINDOW_WIDTH / 2 + 100, 100);
+            }
+        }
+
+        CanvasFacade c = new CanvasFacade();
+
         //This method runs in a separate thread. Does not change state of Game data, only reads
         public void paint(Graphics g) {
-            //weird swing graphics housekeeping
-            Graphics2D g2 = (Graphics2D) g;
-
-            //drawing the 'sprites' for the game
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, CanvasConstants.WINDOW_HEIGHT, CanvasConstants.WINDOW_WIDTH); // fill the whole screen black
-            g2.setColor(Color.WHITE);
-
-            //only draw the paddles when there is still a game in progress, and don't attempt to draw paddles when they are null
-            if (!gameOver) {
-                synchronized (player1Lock) { //wait until aquired lock from new game thread which has power to create and destroy the ball
-                    if (player1 != null) {
-                        player1.getPaddle().draw(g2);
-                    }
-                }
-                synchronized (player2Lock) {
-                    if (player2 != null) {
-                        player2.getPaddle().draw(g2);
-                    }
-                }
-            } else {
-                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-                g2.drawString("Press the 'enter' key to start a new game.", 55, CanvasConstants.WINDOW_HEIGHT - 100);
-            }
-
-            synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
-                if (ball != null) {
-                    ball.draw(g2);
-                }
-            }
-
-            for (int i = 0; i < CanvasConstants.WINDOW_WIDTH; i += 10) { //dotted line
-                g2.drawLine(CanvasConstants.WINDOW_WIDTH / 2, i, CanvasConstants.WINDOW_WIDTH / 2, i + 5);
-            }
-
-            g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 72));
-            g2.drawString("" + leftScore, CanvasConstants.WINDOW_WIDTH / 2 - 150, 100);
-            g2.drawString("" + rightScore, CanvasConstants.WINDOW_WIDTH / 2 + 100, 100);
+            c.setupCanvas(g);
         }
     }
 }

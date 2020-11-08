@@ -1,11 +1,13 @@
 package paddles;
 
+import bridge.White;
 import player.SelectedPlayer;
 import ball.Ball;
 import utils.CanvasConstants;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import bridge.ColorBridge;
 
 public class SimplePaddle implements Paddle {
 
@@ -15,10 +17,10 @@ public class SimplePaddle implements Paddle {
     private int speed;
     private int xPosition, yPosition;
     private Shape paddleShape;
-    private Color color;
+    private ColorBridge color;
 
     //constructor
-    public SimplePaddle(SelectedPlayer player, int speed, Color color) {
+    public SimplePaddle(SelectedPlayer player, int speed, ColorBridge color) {
         this.color = color;
         this.speed = speed;
         int xPos;
@@ -60,9 +62,9 @@ public class SimplePaddle implements Paddle {
     @Override
     public void draw(Graphics2D g2) {
         paddleShape = new Rectangle2D.Double(xPosition, yPosition, WIDTH, HEIGHT);
-        g2.setColor(color);
+        g2.setColor(color.color());
         g2.fill(paddleShape);
-        g2.setColor(Color.WHITE);
+        g2.setColor(new White().color());
     }
 
     @Override

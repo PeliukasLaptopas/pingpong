@@ -1,16 +1,16 @@
 package paddles.builder;
 
+import bridge.Blue;
+import bridge.ColorBridge;
 import paddles.Paddle;
 import player.SelectedPlayer;
-
-import java.awt.*;
 
 public abstract class PaddleBuilder {
     public SelectedPlayer player;
     public int speed;
-    public Color color = Color.WHITE;
+    public ColorBridge color = new Blue();
 
-    public PaddleBuilder setColor(Color color) {
+    public PaddleBuilder setColor(ColorBridge color) {
         this.color = color;
         return this;
     }

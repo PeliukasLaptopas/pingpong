@@ -1,7 +1,9 @@
 package paddles;
 
+import bridge.White;
 import player.SelectedPlayer;
 import ball.Ball;
+import bridge.ColorBridge;
 import utils.CanvasConstants;
 
 import java.awt.*;
@@ -17,10 +19,10 @@ public class AngledPaddle implements Paddle {
     private int angle;
     private int xPosition, yPosition;
     private Shape paddleShape;
-    private Color color;
+    private ColorBridge color;
 
     //constructor
-    public AngledPaddle(SelectedPlayer player, int speed, int angle, Color color) {
+    public AngledPaddle(SelectedPlayer player, int speed, int angle, ColorBridge color) {
         this.color = color;
         // Angle must be between 0 - 90
         this.angle = Math.min(90, Math.max(0, angle));
@@ -72,9 +74,9 @@ public class AngledPaddle implements Paddle {
         aff.rotate(Math.toRadians(angle), xPosition, yPosition);
         this.paddleShape = aff.createTransformedShape(rect);
 
-        g2.setColor(color);
+        g2.setColor(color.color());
         g2.fill(this.paddleShape);
-        g2.setColor(Color.WHITE);
+        g2.setColor(new White().color());
     }
 
     @Override
