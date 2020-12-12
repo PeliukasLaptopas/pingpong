@@ -1,15 +1,15 @@
-package template;
+package patterns.template;
 
-public final class DashedPaddleTemplate extends PaddleTemplate {
+public final class ColoredPaddleTemplate extends PaddleTemplate {
 
     @Override
     public boolean needsColor() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean needsDashes() {
-        return true;
+        return false;
     }
 
     @Override

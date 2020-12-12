@@ -1,6 +1,6 @@
 package api;
 
-import chain_of_responsibility.Logger;
+import patterns.chain_of_responsibility.Logger;
 import observer.Subject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

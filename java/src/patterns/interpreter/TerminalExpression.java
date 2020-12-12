@@ -1,4 +1,4 @@
-package interpreter;
+package patterns.interpreter;
 
 public class TerminalExpression implements Expression {
 

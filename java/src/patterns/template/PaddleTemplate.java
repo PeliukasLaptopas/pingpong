@@ -1,4 +1,4 @@
-package template;
+package patterns.template;
 
 import bridge.*;
 import paddles.Paddle;

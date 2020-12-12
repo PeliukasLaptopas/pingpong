@@ -1,4 +1,4 @@
-package interpreter;
+package patterns.interpreter;
 
 public enum InterpretedAction {
     BALL_LARGE,

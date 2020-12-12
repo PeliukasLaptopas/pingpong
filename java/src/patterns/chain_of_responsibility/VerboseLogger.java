@@ -1,4 +1,4 @@
-package chain_of_responsibility;
+package patterns.chain_of_responsibility;
 
 public class VerboseLogger extends Logger {
 

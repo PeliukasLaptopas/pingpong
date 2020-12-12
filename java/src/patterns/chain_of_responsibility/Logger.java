@@ -1,4 +1,4 @@
-package chain_of_responsibility;
+package patterns.chain_of_responsibility;
 
 public abstract class Logger {
     public static int VERBOSE = 1;

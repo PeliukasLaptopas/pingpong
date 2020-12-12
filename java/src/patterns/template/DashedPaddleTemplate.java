@@ -1,6 +1,6 @@
-package template;
+package patterns.template;
 
-public final class AngledPaddleTemplate extends PaddleTemplate {
+public final class DashedPaddleTemplate extends PaddleTemplate {
 
     @Override
     public boolean needsColor() {
@@ -9,11 +9,11 @@ public final class AngledPaddleTemplate extends PaddleTemplate {
 
     @Override
     public boolean needsDashes() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean needsAngle() {
-        return true;
+        return false;
     }
 }

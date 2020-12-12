@@ -1,10 +1,10 @@
 package ball;
 
-import chain_of_responsibility.Logger;
+import patterns.chain_of_responsibility.Logger;
 import sound.GameSound;
 import utils.CanvasConstants;
-import visitor.BallAngleVisitor;
-import visitor.SmoothBallAngleVisitor;
+import patterns.visitor.BallAngleVisitor;
+import patterns.visitor.SmoothBallAngleVisitor;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
