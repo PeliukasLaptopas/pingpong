@@ -20,6 +20,9 @@ import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.abstractfactory.PaddleFactoryProducer;
 import paddles.abstractfactory.PaddleFactoryType;
 import paddles.factory.PaddleType;
+import patterns.iterator.Iterator;
+import patterns.iterator.PlayerList;
+import patterns.iterator.PlayerStack;
 import player.Player;
 import player.SelectedPlayer;
 import strategy.Context;
@@ -31,10 +34,8 @@ import utils.CanvasConstants;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -69,6 +70,7 @@ public class Game extends JFrame implements Runnable {
     // Players
     private Player player1; //player paddle
     private Player player2; //enemy paddle
+    private PlayerList players;
     private SelectedPlayer selectedPlayer = SelectedPlayer.PLAYER1;
     private int currentPlayerYPosition = 0;
     // Paddles
@@ -143,15 +145,17 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void createSelectedPlayer() {
-        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+        if (selectedPlayer == SelectedPlayer.PLAYER1) {
             player1 = new Player(
                     true,
-                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1)
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1),
+                    SelectedPlayer.PLAYER1
             );
         } else {
             player2 = new Player(
                     false,
-                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER2)
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER2),
+                    SelectedPlayer.PLAYER2
             );
         }
     }
@@ -169,13 +173,22 @@ public class Game extends JFrame implements Runnable {
     private void createPlayers() {
         player1 = new Player(
                 true,
-                new ColoredPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER1)
+                new ColoredPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER1),
+                SelectedPlayer.PLAYER1
         );
 
         player2 = player1.makeCopy();
         player2.setHost(false);
         Paddle angledPaddle = new AngledPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER2);
         player2.setPaddle(angledPaddle);
+        List<Player> playerList = new ArrayList<Player>() {{
+            add(player1);
+            add(player2);
+        }};
+        players = new PlayerList(playerList);
+        for (Iterator<Player> iterator = players.getIterator(); iterator.hasNext(); ) {
+            Logger.log(Logger.INFO, "Created player -> " + iterator.next().getSelectedPlayer());
+        }
     }
 
     private Player getSelectedPlayer() {

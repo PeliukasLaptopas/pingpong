@@ -5,10 +5,12 @@ import paddles.Paddle;
 public class Player implements Cloneable {
     private boolean isHost;
     private Paddle paddle;
+    private SelectedPlayer selectedPlayer;
 
-    public Player(boolean isHost, Paddle paddle) {
+    public Player(boolean isHost, Paddle paddle, SelectedPlayer selectedPlayer) {
         this.isHost = isHost;
         this.paddle = paddle;
+        this.selectedPlayer = selectedPlayer;
     }
 
     public Paddle getPaddle() {
@@ -34,5 +36,13 @@ public class Player implements Cloneable {
             e.printStackTrace();
             return this;
         }
+    }
+
+    public SelectedPlayer getSelectedPlayer() {
+        return selectedPlayer;
+    }
+
+    public void setSelectedPlayer(SelectedPlayer selectedPlayer) {
+        this.selectedPlayer = selectedPlayer;
     }
 }
