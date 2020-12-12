@@ -3,6 +3,7 @@ import ball.Ball;
 import ball.BallPosition;
 import ball.factory.BallFactory;
 import ball.factory.BallType;
+import chain_of_responsibility.Logger;
 import com.google.gson.Gson;
 import command.Action;
 import input.InputHandler;
@@ -100,7 +101,7 @@ public class Game extends JFrame implements Runnable {
         actionList.add(new PaddleCollisionActionLeft(player1.getPaddle(), ball, "Left"));
         actionList.add(new PaddleCollisionActionRight(player2.getPaddle(), ball, "Right"));
 
-        System.out.println(actionList.size());
+        Logger.log(Logger.VERBOSE, "" + actionList.size());
     }
 
     private void createPlayers() {
@@ -205,7 +206,7 @@ public class Game extends JFrame implements Runnable {
                 }
                 Thread.sleep(delayMs);//tells the game how often to refresh
             } catch (Exception ex) {
-                System.out.println("Couldn't sleep for some reason.");
+                Logger.log(Logger.ERROR, "Couldn't sleep for some reason.");
                 ex.printStackTrace();
             }
             if (true) {
@@ -249,7 +250,7 @@ public class Game extends JFrame implements Runnable {
     //for playing the wall sounds, else-if because don't want any sounds to play or wall collision behavior to happen simultaneously
     public boolean checkWallBounce() {
         if ((ball.getYPos() >= (CanvasConstants.WINDOW_HEIGHT_ACTUAL)) || (ball.getYPos() <= 0)) {
-            //System.out.println("Top or bottom \'wall\' was hit");
+            Logger.log(Logger.INFO, "Top ot bottom wall was hit.");
         } else if (ball.getXPos() >= (CanvasConstants.WINDOW_WIDTH_ACTUAL - ball.getSize())) {
             if (gameOver) {
             } else {
@@ -290,15 +291,15 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void onKeyPressed(InputKey inputKey) {
-        if(inputKey == InputKey.UP) {
+        if (inputKey == InputKey.UP) {
             getSelectedPlayer().getPaddle().moveUp();
             repaint();
         }
-        if(inputKey == InputKey.DOWN) {
+        if (inputKey == InputKey.DOWN) {
             getSelectedPlayer().getPaddle().moveDown();
             repaint();
         }
-        if(inputKey == InputKey.ENTER) {
+        if (inputKey == InputKey.ENTER) {
             if (gameOver) {
                 leftScore = 0;
                 rightScore = 0;

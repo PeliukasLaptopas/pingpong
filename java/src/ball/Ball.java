@@ -1,5 +1,6 @@
 package ball;
 
+import chain_of_responsibility.Logger;
 import sound.GameSound;
 import utils.CanvasConstants;
 import visitor.BallAngleVisitor;
@@ -38,7 +39,7 @@ public abstract class Ball implements GameSound {
         }
         yVelocity = (Math.sin(angle) * (double) getSpeed());
         destroyable = false;
-        System.out.println(angle);
+        Logger.log(Logger.VERBOSE, "" + angle);
     }
 
     public void addAngleVisitor(BallAngleVisitor visitor) {
@@ -47,7 +48,7 @@ public abstract class Ball implements GameSound {
 
     @Override
     public void makeSound() {
-        System.out.println("Created a ball");
+        Logger.log(Logger.INFO, "Created a ball");
     }
 
     private TimerTask createCollisionTimerTask() {
@@ -73,7 +74,7 @@ public abstract class Ball implements GameSound {
     public void updateAngle() {
         angle = angleVisitor.calculateAngle(this);
         yVelocity = (Math.sin(angle) * (double) getSpeed());
-        System.out.println("Current angle: " + angle);
+        Logger.log(Logger.INFO, "Current angle: " + angle);
     }
 
     public void draw(Graphics2D g2) {
@@ -85,7 +86,6 @@ public abstract class Ball implements GameSound {
     public void updateBall() {
         position.setX(position.getX() + xVelocity);
         position.setY(position.getY() + yVelocity);
-        //System.out.println(angle);
         //right bound checking
         if (position.getX() > CanvasConstants.WINDOW_WIDTH_ACTUAL - getSize()) {
             reverseXVelocity();
