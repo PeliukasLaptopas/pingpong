@@ -15,7 +15,7 @@ public abstract class Logger {
     }
 
     public static void log(int level, String message) {
-        getLoggers().logMessage(level, message);
+//        getLoggers().logMessage(level, message);
     }
 
     protected void logMessage(int level, String message) {

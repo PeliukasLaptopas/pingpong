@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import command.Action;
 import input.InputHandler;
 import input.InputKey;
+import interpreter.*;
 import observer.InputKeyObserver;
 import observer.StringObserver;
 import paddles.abstractfactory.AbstractPaddleFactory;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -47,6 +49,8 @@ public class Game extends JFrame implements Runnable {
 
     //instance variables
     private Ball ball;
+    private BallType ballType = BallType.LARGE;
+    private PaddleType paddleType = PaddleType.SIMPLE;
     private Random random = new Random(); //for generating random integers
     private boolean gameOver = true;
     //locks for concurrency
@@ -81,6 +85,45 @@ public class Game extends JFrame implements Runnable {
         createPlayers();
         //start the game
         startGameThread();
+        readInput();
+    }
+
+    private void readInput() {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        Interpreter interpreter = new Interpreter();
+        while (!(input = scanner.nextLine()).equals("exit")) {
+            InterpretedAction action = interpreter.interpret(input);
+            switch (action) {
+                case BALL_SMALL: {
+                    ballType = BallType.SMALL;
+                    createBall();
+                    break;
+                }
+                case BALL_MEDIUM: {
+                    ballType = BallType.MEDIUM;
+                    createBall();
+                    break;
+                }
+                case BALL_LARGE: {
+                    ballType = BallType.LARGE;
+                    createBall();
+                    break;
+                }
+                case PADDLE_ANGLED: {
+                    paddleType = PaddleType.ANGLED;
+                    createSelectedPlayer();
+                    createBall();
+                    break;
+                }
+                case PADDLE_SIMPLE: {
+                    paddleType = PaddleType.SIMPLE;
+                    createSelectedPlayer();
+                    createBall();
+                    break;
+                }
+            }
+        }
     }
 
     private void createConnection() {
@@ -94,8 +137,22 @@ public class Game extends JFrame implements Runnable {
         new InputKeyObserver(inputHandler.getSubject(), this::onKeyPressed);
     }
 
+    private void createSelectedPlayer() {
+        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+            player1 = new Player(
+                    true,
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1)
+            );
+        } else {
+            player2 = new Player(
+                    false,
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER2)
+            );
+        }
+    }
+
     private void createBall() {
-        ball = ballFactory.createBall(BallType.LARGE);
+        ball = ballFactory.createBall(ballType);
 
         //ewww this shouldnt be like this but whatever
         actionList.add(new PaddleCollisionActionLeft(player1.getPaddle(), ball, "Left"));
@@ -105,14 +162,21 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void createPlayers() {
+        PaddleType player1PaddleType = PaddleType.SIMPLE;
+        PaddleType player2PaddleType = PaddleType.SIMPLE;
+        if(selectedPlayer == SelectedPlayer.PLAYER1) {
+            player1PaddleType = paddleType;
+        } else {
+            player2PaddleType = paddleType;
+        }
         player1 = new Player(
                 true,
-                paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1)
+                paddleFactory.createPaddle(player1PaddleType, SelectedPlayer.PLAYER1)
         );
 
         player2 = player1.makeCopy();
         player2.setHost(false);
-        player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
+        player2.setPaddle(paddleFactory.createPaddle(player2PaddleType, SelectedPlayer.PLAYER2));
     }
 
     private Player getSelectedPlayer() {
@@ -223,7 +287,6 @@ public class Game extends JFrame implements Runnable {
                 }
 				/*
 //				gameOver();*/
-
             } else { //Game Over, man!
 //				ball.updateBall();
 //				checkWallBounce();
@@ -308,7 +371,7 @@ public class Game extends JFrame implements Runnable {
                     player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
                 }
                 synchronized (player2Lock) {
-                    player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
+                    player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
                 }
             }
         }
