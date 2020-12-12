@@ -2,39 +2,47 @@ package ball;
 
 import sound.GameSound;
 import utils.CanvasConstants;
+import visitor.BallAngleVisitor;
+import visitor.SmoothBallAngleVisitor;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public abstract class Ball implements GameSound {
 
-    private int xVelocity, yVelocity;
+    private double xVelocity, yVelocity;
+    public double angle;
     private BallPosition position;
     //Collision handling
     private Timer lastCollisionTimer = new Timer();
     private boolean isCollisionEnabled = true;
     private boolean destroyable = false; //is this field necessary?
     public Shape ballShape;
+    private BallAngleVisitor angleVisitor;
 
     public abstract int getSize();
+
     public abstract int getSpeed();
 
     public Ball() {
-        Random rand = new Random();
-        int angle = rand.nextInt(180);
+        angle = 1;
+        addAngleVisitor(new SmoothBallAngleVisitor());
         position = new BallPosition(CanvasConstants.WINDOW_WIDTH / 2 - getSize(), CanvasConstants.WINDOW_HEIGHT / 2 - getSize());
 
         //init the velocity in both directions
-        xVelocity = (int) (Math.cos(angle) * (double) getSpeed());
+        xVelocity = (Math.cos(angle) * (double) getSpeed());
         if (xVelocity == 0) {
             xVelocity = getSpeed();
         }
-        yVelocity = (int) (Math.sin(angle) * (double) getSpeed());
+        yVelocity = (Math.sin(angle) * (double) getSpeed());
         destroyable = false;
         System.out.println(angle);
+    }
+
+    public void addAngleVisitor(BallAngleVisitor visitor) {
+        this.angleVisitor = visitor;
     }
 
     @Override
@@ -52,13 +60,20 @@ public abstract class Ball implements GameSound {
     }
 
     public void onCollision() {
-        if(isCollisionEnabled) {
+        if (isCollisionEnabled) {
             isCollisionEnabled = false;
             lastCollisionTimer.cancel();
             lastCollisionTimer = new Timer();
             lastCollisionTimer.schedule(createCollisionTimerTask(), 1000);
+            updateAngle();
             reverseXVelocity();
         }
+    }
+
+    public void updateAngle() {
+        angle = angleVisitor.calculateAngle(this);
+        yVelocity = (Math.sin(angle) * (double) getSpeed());
+        System.out.println("Current angle: " + angle);
     }
 
     public void draw(Graphics2D g2) {
@@ -97,11 +112,11 @@ public abstract class Ball implements GameSound {
     }
 
     //getters
-    public int getXPos() {
+    public double getXPos() {
         return position.getX();
     }
 
-    public int getYPos() {
+    public double getYPos() {
         return position.getY();
     }
 
