@@ -11,7 +11,8 @@ import java.util.TimerTask;
 
 public abstract class Ball implements GameSound {
 
-    private int xVelocity, yVelocity;
+    private double xVelocity, yVelocity;
+    int angle;
     private BallPosition position;
     //Collision handling
     private Timer lastCollisionTimer = new Timer();
@@ -23,16 +24,17 @@ public abstract class Ball implements GameSound {
     public abstract int getSpeed();
 
     public Ball() {
-        Random rand = new Random();
-        int angle = rand.nextInt(180);
+        angle = 1;
         position = new BallPosition(CanvasConstants.WINDOW_WIDTH / 2 - getSize(), CanvasConstants.WINDOW_HEIGHT / 2 - getSize());
 
         //init the velocity in both directions
-        xVelocity = (int) (Math.cos(angle) * (double) getSpeed());
+        xVelocity = (Math.cos(angle) * (double) getSpeed());
         if (xVelocity == 0) {
             xVelocity = getSpeed();
         }
-        yVelocity = (int) (Math.sin(angle) * (double) getSpeed());
+        System.out.println("X velocity: " + xVelocity);
+        yVelocity = (Math.sin(angle) * (double) getSpeed());
+        System.out.println("Y velocity: " + yVelocity);
         destroyable = false;
         System.out.println(angle);
     }
@@ -57,8 +59,14 @@ public abstract class Ball implements GameSound {
             lastCollisionTimer.cancel();
             lastCollisionTimer = new Timer();
             lastCollisionTimer.schedule(createCollisionTimerTask(), 1000);
+            updateAngle();
             reverseXVelocity();
         }
+    }
+
+    public void updateAngle() {
+        angle = new Random().nextInt(180);
+        yVelocity = (Math.sin(angle) * (double) getSpeed());
     }
 
     public void draw(Graphics2D g2) {
@@ -97,11 +105,11 @@ public abstract class Ball implements GameSound {
     }
 
     //getters
-    public int getXPos() {
+    public double getXPos() {
         return position.getX();
     }
 
-    public int getYPos() {
+    public double getYPos() {
         return position.getY();
     }
 

@@ -94,7 +94,7 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void createBall() {
-        ball = ballFactory.createBall(BallType.SMALL);
+        ball = ballFactory.createBall(BallType.LARGE);
 
         //ewww this shouldnt be like this but whatever
         actionList.add(new PaddleCollisionActionLeft(player1.getPaddle(), ball, "Left"));
@@ -304,7 +304,7 @@ public class Game extends JFrame implements Runnable {
                 rightScore = 0;
                 gameOver = false;
                 synchronized (player1Lock) {
-                    player1.setPaddle(paddleFactory.createPaddle(PaddleType.DASHED, SelectedPlayer.PLAYER1));
+                    player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
                 }
                 synchronized (player2Lock) {
                     player2.setPaddle(paddleFactory.createPaddle(PaddleType.ANGLED, SelectedPlayer.PLAYER2));
