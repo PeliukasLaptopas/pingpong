@@ -3,7 +3,6 @@ import ball.Ball;
 import ball.BallPosition;
 import ball.factory.BallFactory;
 import ball.factory.BallType;
-import patterns.chain_of_responsibility.Logger;
 import com.google.gson.Gson;
 import command.Action;
 import command.CommandManager;
@@ -11,8 +10,6 @@ import command.PaddleCollisionActionLeft;
 import command.PaddleCollisionActionRight;
 import input.InputHandler;
 import input.InputKey;
-import patterns.interpreter.InterpretedAction;
-import patterns.interpreter.Interpreter;
 import observer.InputKeyObserver;
 import observer.StringObserver;
 import paddles.Paddle;
@@ -20,22 +17,26 @@ import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.abstractfactory.PaddleFactoryProducer;
 import paddles.abstractfactory.PaddleFactoryType;
 import paddles.factory.PaddleType;
+import patterns.chain_of_responsibility.Logger;
+import patterns.interpreter.InterpretedAction;
+import patterns.interpreter.Interpreter;
 import patterns.iterator.Iterator;
 import patterns.iterator.PlayerList;
-import patterns.iterator.PlayerStack;
+import patterns.template.AngledPaddleTemplate;
+import patterns.template.ColoredPaddleTemplate;
 import player.Player;
 import player.SelectedPlayer;
 import strategy.Context;
 import strategy.OperationAdd;
-import patterns.template.AngledPaddleTemplate;
-import patterns.template.ColoredPaddleTemplate;
 import utils.CanvasConstants;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 /**
  * Implements the Runnable interface, so Game will be treated as a Thread to be executed
@@ -101,35 +102,50 @@ public class Game extends JFrame implements Runnable {
         Interpreter interpreter = new Interpreter();
         while (!(input = scanner.nextLine()).equals("exit")) {
             InterpretedAction action = interpreter.interpret(input);
-            switch (action) {
-                case BALL_SMALL: {
-                    ballType = BallType.SMALL;
-                    createBall();
-                    break;
-                }
-                case BALL_MEDIUM: {
-                    ballType = BallType.MEDIUM;
-                    createBall();
-                    break;
-                }
-                case BALL_LARGE: {
-                    ballType = BallType.LARGE;
-                    createBall();
-                    break;
-                }
-                case PADDLE_ANGLED: {
-                    paddleType = PaddleType.ANGLED;
-                    createSelectedPlayer();
-                    createBall();
-                    break;
-                }
-                case PADDLE_SIMPLE: {
-                    paddleType = PaddleType.SIMPLE;
-                    createSelectedPlayer();
-                    createBall();
-                    break;
-                }
+            handleInterpretedAction(action, true);
+        }
+    }
+
+    private void handleInterpretedAction(InterpretedAction action, boolean isLocal) {
+        switch (action) {
+            case BALL_SMALL: {
+                ballType = BallType.SMALL;
+                createBall();
+                break;
             }
+            case BALL_MEDIUM: {
+                ballType = BallType.MEDIUM;
+                createBall();
+                break;
+            }
+            case BALL_LARGE: {
+                ballType = BallType.LARGE;
+                createBall();
+                break;
+            }
+            case PADDLE_ANGLED: {
+                paddleType = PaddleType.ANGLED;
+                if(isLocal) {
+                    createSelectedPlayer();
+                } else {
+                    createEnemyPlayer();
+                }
+                createBall();
+                break;
+            }
+            case PADDLE_SIMPLE: {
+                paddleType = PaddleType.SIMPLE;
+                if(isLocal) {
+                    createSelectedPlayer();
+                } else {
+                    createEnemyPlayer();
+                }
+                createBall();
+                break;
+            }
+        }
+        if (isLocal && client != null && client.getConnection().isOpen()) {
+            client.send(action.toJson());
         }
     }
 
@@ -160,10 +176,27 @@ public class Game extends JFrame implements Runnable {
         }
     }
 
+    private void createEnemyPlayer() {
+        if (selectedPlayer == SelectedPlayer.PLAYER1) {
+            player2 = new Player(
+                    true,
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER2),
+                    SelectedPlayer.PLAYER1
+            );
+        } else {
+            player1 = new Player(
+                    false,
+                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1),
+                    SelectedPlayer.PLAYER2
+            );
+        }
+    }
+
     private void createBall() {
         ball = ballFactory.createBall(ballType);
 
         //ewww this shouldnt be like this but whatever
+        actionList.clear();
         actionList.add(new PaddleCollisionActionLeft(player1.getPaddle(), ball, "Left"));
         actionList.add(new PaddleCollisionActionRight(player2.getPaddle(), ball, "Right"));
 
@@ -251,7 +284,14 @@ public class Game extends JFrame implements Runnable {
             ball.setBallPosition(ballPosition);
             return;
         } catch (Exception e) {
-
+            Logger.log(Logger.WARN, "Could not parse Ball position");
+        }
+        try {
+            InterpretedAction action = gson.fromJson(message, InterpretedAction.class);
+            handleInterpretedAction(action, false);
+            return;
+        } catch (Exception e) {
+            Logger.log(Logger.WARN, "Could not parse Interpreted action");
         }
         getEnemyPlayer().getPaddle().setYPosition(Integer.parseInt(message));
     }
