@@ -7,7 +7,7 @@ public class DashedPaddleBuilder extends PaddleBuilder {
 
     private int dashCount = 2;
 
-    public PaddleBuilder setDashCount(int dashCount) {
+    public DashedPaddleBuilder setDashCount(int dashCount) {
         this.dashCount = dashCount;
         return this;
     }

@@ -6,11 +6,16 @@ import ball.factory.BallType;
 import chain_of_responsibility.Logger;
 import com.google.gson.Gson;
 import command.Action;
+import command.CommandManager;
+import command.PaddleCollisionActionLeft;
+import command.PaddleCollisionActionRight;
 import input.InputHandler;
 import input.InputKey;
-import interpreter.*;
+import interpreter.InterpretedAction;
+import interpreter.Interpreter;
 import observer.InputKeyObserver;
 import observer.StringObserver;
+import paddles.Paddle;
 import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.abstractfactory.PaddleFactoryProducer;
 import paddles.abstractfactory.PaddleFactoryType;
@@ -19,16 +24,16 @@ import player.Player;
 import player.SelectedPlayer;
 import strategy.Context;
 import strategy.OperationAdd;
+import template.AngledPaddleTemplate;
+import template.ColoredPaddleTemplate;
 import utils.CanvasConstants;
-import command.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Random;
-
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -162,21 +167,15 @@ public class Game extends JFrame implements Runnable {
     }
 
     private void createPlayers() {
-        PaddleType player1PaddleType = PaddleType.SIMPLE;
-        PaddleType player2PaddleType = PaddleType.SIMPLE;
-        if(selectedPlayer == SelectedPlayer.PLAYER1) {
-            player1PaddleType = paddleType;
-        } else {
-            player2PaddleType = paddleType;
-        }
         player1 = new Player(
                 true,
-                paddleFactory.createPaddle(player1PaddleType, SelectedPlayer.PLAYER1)
+                new ColoredPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER1)
         );
 
         player2 = player1.makeCopy();
         player2.setHost(false);
-        player2.setPaddle(paddleFactory.createPaddle(player2PaddleType, SelectedPlayer.PLAYER2));
+        Paddle angledPaddle = new AngledPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER2);
+        player2.setPaddle(angledPaddle);
     }
 
     private Player getSelectedPlayer() {
@@ -367,12 +366,6 @@ public class Game extends JFrame implements Runnable {
                 leftScore = 0;
                 rightScore = 0;
                 gameOver = false;
-                synchronized (player1Lock) {
-                    player1.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER1));
-                }
-                synchronized (player2Lock) {
-                    player2.setPaddle(paddleFactory.createPaddle(PaddleType.SIMPLE, SelectedPlayer.PLAYER2));
-                }
             }
         }
     }
