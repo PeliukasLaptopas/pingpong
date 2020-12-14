@@ -18,6 +18,7 @@ public class PaddleCollisionActionLeft implements Action {
     @Override
     public void execute() {
 //        System.out.println("Left collision");
+
         paddle.doCollision(ball);
     }
 

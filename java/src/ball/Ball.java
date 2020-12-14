@@ -142,4 +142,11 @@ public abstract class Ball implements GameSound {
         yVelocity = y;
     }
 
+    public static class BounceData {
+        public int count;
+
+        public BounceData(int count) {
+            this.count = count;
+        }
+    }
 }

@@ -24,6 +24,7 @@ public class CommandManager {
     }
 
     public void execute(List<Action> actionList){
+
         actionList.forEach(Action::execute);
         queueStackNormal.push(actionList);
         actionList.forEach(a -> actionHistory.add(a.getName()));

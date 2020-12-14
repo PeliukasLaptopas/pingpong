@@ -3,6 +3,7 @@ import ball.Ball;
 import ball.BallPosition;
 import ball.factory.BallFactory;
 import ball.factory.BallType;
+import bridge.Red;
 import com.google.gson.Gson;
 import command.Action;
 import command.CommandManager;
@@ -13,6 +14,7 @@ import input.InputKey;
 import observer.InputKeyObserver;
 import observer.StringObserver;
 import paddles.Paddle;
+import paddles.SimplePaddle;
 import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.abstractfactory.PaddleFactoryProducer;
 import paddles.abstractfactory.PaddleFactoryType;
@@ -22,6 +24,9 @@ import patterns.interpreter.InterpretedAction;
 import patterns.interpreter.Interpreter;
 import patterns.iterator.Iterator;
 import patterns.iterator.PlayerList;
+import patterns.proxy.CreatePlayer1Proxy;
+import patterns.state.*;
+import patterns.state.Menu;
 import patterns.template.AngledPaddleTemplate;
 import patterns.template.ColoredPaddleTemplate;
 import player.Player;
@@ -50,6 +55,8 @@ public class Game extends JFrame implements Runnable {
     protected int leftScore = 0;
     protected int rightScore = 0;
 
+    GameStatusState statusState = new Menu();
+
     CommandManager manager = CommandManager.getInstance();
     List<Action> actionList = new ArrayList<>();
     Context context = new Context(new OperationAdd());
@@ -69,6 +76,9 @@ public class Game extends JFrame implements Runnable {
     // Sockets
     private PingPongSocketClient client = null;
     // Players
+
+    private List<Ball.BounceData> ballBounceCount = new ArrayList<Ball.BounceData>();
+
     private Player player1; //player paddle
     private Player player2; //enemy paddle
     private PlayerList players;
@@ -81,12 +91,16 @@ public class Game extends JFrame implements Runnable {
     private InputHandler inputHandler = new InputHandler();
 
     //where execution begins
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         new Game(); //create a new game object
     }
 
     //constructor for starting the game
-    public Game() {
+    public Game() throws InterruptedException {
+        Ball.BounceData newBounce = new Ball.BounceData(0);
+        ballBounceCount.add(newBounce);
+
+        statusState = new Loading();
         createConnection();
         initCanvas();
         addKeyListener(inputHandler);
@@ -94,6 +108,8 @@ public class Game extends JFrame implements Runnable {
         //start the game
         startGameThread();
         readInput();
+
+        statusState = new Menu();
     }
 
     private void readInput() {
@@ -162,9 +178,12 @@ public class Game extends JFrame implements Runnable {
 
     private void createSelectedPlayer() {
         if (selectedPlayer == SelectedPlayer.PLAYER1) {
+            SimplePaddle p = (SimplePaddle)paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1);
+            p.setColor(new Red());
+
             player1 = new Player(
                     true,
-                    paddleFactory.createPaddle(paddleType, SelectedPlayer.PLAYER1),
+                    p,
                     SelectedPlayer.PLAYER1
             );
         } else {
@@ -203,12 +222,10 @@ public class Game extends JFrame implements Runnable {
         Logger.log(Logger.VERBOSE, "" + actionList.size());
     }
 
-    private void createPlayers() {
-        player1 = new Player(
-                true,
-                new ColoredPaddleTemplate().createPaddleTemplate(SelectedPlayer.PLAYER1),
-                SelectedPlayer.PLAYER1
-        );
+    private void createPlayers() throws InterruptedException {
+        CreatePlayer1Proxy cp1p = new CreatePlayer1Proxy(true );
+
+        player1 = cp1p.newPlayer();
 
         player2 = player1.makeCopy();
         player2.setHost(false);
@@ -365,6 +382,8 @@ public class Game extends JFrame implements Runnable {
     //for playing the wall sounds, else-if because don't want any sounds to play or wall collision behavior to happen simultaneously
     public boolean checkWallBounce() {
         if ((ball.getYPos() >= (CanvasConstants.WINDOW_HEIGHT_ACTUAL)) || (ball.getYPos() <= 0)) {
+            ballBounceCount.get(ballBounceCount.size() - 1).count++;
+
             Logger.log(Logger.INFO, "Top ot bottom wall was hit.");
         } else if (ball.getXPos() >= (CanvasConstants.WINDOW_WIDTH_ACTUAL - ball.getSize())) {
             if (gameOver) {
@@ -385,6 +404,7 @@ public class Game extends JFrame implements Runnable {
 
     //Check for the moment where the paddles and the ball collide
     public void doCollision() {
+        statusState = new CollisionState();
         manager.execute(actionList);
 
 //        player1.getPaddle().doCollision(ball);
@@ -395,7 +415,11 @@ public class Game extends JFrame implements Runnable {
     /then destroy the paddles and restart the game.*/
     public void gameOver() {
         if ((leftScore >= 7 || rightScore >= 7) && !gameOver) {
+            Ball.BounceData newBounce = new Ball.BounceData(0);
+            ballBounceCount.add(newBounce);
+
             gameOver = true;
+            statusState = new Exit();
             synchronized (player1Lock) {
                 player1.setPaddle(null);
             }
@@ -466,6 +490,8 @@ public class Game extends JFrame implements Runnable {
                 g2.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 72));
                 g2.drawString("" + leftScore, CanvasConstants.WINDOW_WIDTH / 2 - 150, 100);
                 g2.drawString("" + rightScore, CanvasConstants.WINDOW_WIDTH / 2 + 100, 100);
+                g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+                g2.drawString("game bounces: " + ballBounceCount.get(ballBounceCount.size()-1).count, CanvasConstants.WINDOW_WIDTH / 2 - 50, 100);
             }
         }
 

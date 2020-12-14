@@ -2,7 +2,7 @@ package bridge;
 
 import java.awt.*;
 
-public class White implements ColorBridge {
+public class White extends ColorBridge {
     @Override
     public Color color() {
         return Color.WHITE;

@@ -34,6 +34,10 @@ public class SimplePaddle implements Paddle {
         this.yPosition = yPos;
     }
 
+    public void setColor(ColorBridge c) {
+        this.color = c;
+    }
+
     @Override
     public void setYPosition(int newYPosition) {
         this.yPosition = newYPosition;
