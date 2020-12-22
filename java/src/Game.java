@@ -19,6 +19,7 @@ import paddles.abstractfactory.AbstractPaddleFactory;
 import paddles.abstractfactory.PaddleFactoryProducer;
 import paddles.abstractfactory.PaddleFactoryType;
 import paddles.factory.PaddleType;
+import patterns.FlyWeight;
 import patterns.chain_of_responsibility.Logger;
 import patterns.interpreter.InterpretedAction;
 import patterns.interpreter.Interpreter;
@@ -474,7 +475,7 @@ public class Game extends JFrame implements Runnable {
                     }
                 } else {
                     g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-                    g2.drawString("Press the 'enter' key to start a new game.", 55, CanvasConstants.WINDOW_HEIGHT - 100);
+                    g2.drawString(FlyWeight.getType("Start") + " Press the 'enter' key to start a new game.", 55, CanvasConstants.WINDOW_HEIGHT - 100);
                 }
 
                 synchronized (ballLock) { // Wait until nothing else is creating/deleting the ball
